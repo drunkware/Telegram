@@ -227,11 +227,11 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                             listView.invalidateViews();
                         }
                     } else if (i == notificationRow) {
-                        ((ApplicationActivity)parentActivity).presentFragment(new SettingsNotificationsActivity(), "settings_notifications", false);
+                        ((LaunchActivity)parentActivity).presentFragment(new SettingsNotificationsActivity(), "settings_notifications", false);
                     } else if (i == blockedRow) {
-                        ((ApplicationActivity)parentActivity).presentFragment(new SettingsBlockedUsers(), "settings_blocked", false);
+                        ((LaunchActivity)parentActivity).presentFragment(new SettingsBlockedUsers(), "settings_blocked", false);
                     } else if (i == backgroundRow) {
-                        ((ApplicationActivity)parentActivity).presentFragment(new SettingsWallpapersActivity(), "settings_wallpapers", false);
+                        ((LaunchActivity)parentActivity).presentFragment(new SettingsWallpapersActivity(), "settings_wallpapers", false);
                     } else if (i == askQuestionRow) {
                         final SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
                         int uid = preferences.getInt("support_id", 0);
@@ -290,7 +290,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                                                 Bundle bundle = new Bundle();
                                                 bundle.putInt("user_id", res.user.id);
                                                 fragment.setArguments(bundle);
-                                                ((ApplicationActivity)parentActivity).presentFragment(fragment, "chat" + Math.random(), false);
+                                                ((LaunchActivity)parentActivity).presentFragment(fragment, "chat" + Math.random(), false);
                                             }
                                         });
                                     } else {
@@ -313,7 +313,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                             Bundle bundle = new Bundle();
                             bundle.putInt("user_id", supportUser.id);
                             fragment.setArguments(bundle);
-                            ((ApplicationActivity)parentActivity).presentFragment(fragment, "chat" + Math.random(), false);
+                            ((LaunchActivity)parentActivity).presentFragment(fragment, "chat" + Math.random(), false);
                         }
                     } else if (i == sendLogsRow) {
                         sendLogs();
@@ -500,8 +500,8 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             listAdapter.notifyDataSetChanged();
         }
         firstStart = false;
-        ((ApplicationActivity)parentActivity).showActionBar();
-        ((ApplicationActivity)parentActivity).updateActionBar();
+        ((LaunchActivity)parentActivity).showActionBar();
+        ((LaunchActivity)parentActivity).updateActionBar();
     }
 
     @Override
@@ -566,7 +566,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                     button.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            ((ApplicationActivity)parentActivity).presentFragment(new SettingsChangeNameActivity(), "change_name", false);
+                            ((LaunchActivity)parentActivity).presentFragment(new SettingsChangeNameActivity(), "change_name", false);
                         }
                     });
 

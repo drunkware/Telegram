@@ -14,6 +14,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.util.AttributeSet;
@@ -231,6 +232,12 @@ public class PhotoCropActivity extends BaseFragment {
             int x = (int)(percX * imageToCrop.getWidth());
             int y = (int)(percY * imageToCrop.getHeight());
             int size = (int)(percSize * imageToCrop.getWidth());
+            if (x + size > imageToCrop.getWidth()) {
+                size = imageToCrop.getWidth() - x;
+            }
+            if (y + size > imageToCrop.getHeight()) {
+                size = imageToCrop.getHeight() - y;
+            }
             try {
                 return Bitmap.createBitmap(imageToCrop, x, y, size, size);
             } catch (Exception e) {
@@ -277,12 +284,15 @@ public class PhotoCropActivity extends BaseFragment {
     public boolean onFragmentCreate() {
         super.onFragmentCreate();
         String photoPath = getArguments().getString("photoPath");
-        if (photoPath == null) {
+        Uri photoUri = getArguments().getParcelable("photoUri");
+        if (photoPath == null && photoUri == null) {
             return false;
         }
-        File f = new File(photoPath);
-        if (!f.exists()) {
-            return false;
+        if (photoPath != null) {
+            File f = new File(photoPath);
+            if (!f.exists()) {
+                return false;
+            }
         }
         Point displaySize = new Point();
         Display display = ((WindowManager)ApplicationLoader.applicationContext.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
@@ -292,7 +302,7 @@ public class PhotoCropActivity extends BaseFragment {
             display.getSize(displaySize);
         }
         int size = Math.max(displaySize.x, displaySize.y);
-        imageToCrop = FileLoader.loadBitmap(photoPath, size, size);
+        imageToCrop = FileLoader.loadBitmap(photoPath, photoUri, size, size);
         if (imageToCrop == null) {
             return false;
         }
@@ -376,6 +386,6 @@ public class PhotoCropActivity extends BaseFragment {
         if (getActivity() == null) {
             return;
         }
-        ((ApplicationActivity)parentActivity).updateActionBar();
+        ((LaunchActivity)parentActivity).updateActionBar();
     }
 }

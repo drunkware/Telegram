@@ -501,16 +501,16 @@ public class ContactsController {
                             Utilities.RunOnUIThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if (ConnectionsManager.DEBUG_VERSION) {
-                                        FileLog.e("tmessages", "need delete contacts");
-                                        for (HashMap.Entry<Integer, Contact> c : contactHashMap.entrySet()) {
-                                            Contact contact = c.getValue();
-                                            FileLog.e("tmessages", "delete contact " + contact.first_name + " " + contact.last_name);
-                                            for (String phone : contact.phones) {
-                                                FileLog.e("tmessages", phone);
-                                            }
-                                        }
-                                    }
+//                                    if (ConnectionsManager.DEBUG_VERSION) {
+//                                        FileLog.e("tmessages", "need delete contacts");
+//                                        for (HashMap.Entry<Integer, Contact> c : contactHashMap.entrySet()) {
+//                                            Contact contact = c.getValue();
+//                                            FileLog.e("tmessages", "delete contact " + contact.first_name + " " + contact.last_name);
+//                                            for (String phone : contact.phones) {
+//                                                FileLog.e("tmessages", phone);
+//                                            }
+//                                        }
+//                                    }
 
                                     final ArrayList<TLRPC.User> toDelete = new ArrayList<TLRPC.User>();
                                     if (contactHashMap != null && !contactHashMap.isEmpty()) {
@@ -573,52 +573,82 @@ public class ContactsController {
                     }
                 }
 
-                Utilities.stageQueue.postRunnable(new Runnable() {
-                    @Override
-                    public void run() {
-                        contactsBookSPhones = contactsBookShort;
-                        contactsBook = contactsMap;
-                        contactsSyncInProgress = false;
-                        contactsBookLoaded = true;
-                    }
-                });
-
                 FileLog.e("tmessages", "done processing contacts");
 
                 if (request) {
                     if (!toImport.isEmpty()) {
-                        if (ConnectionsManager.DEBUG_VERSION) {
-                            FileLog.e("tmessages", "start import contacts");
-                            for (TLRPC.TL_inputPhoneContact contact : toImport) {
-                                FileLog.e("tmessages", "add contact " + contact.first_name + " " + contact.last_name + " " + contact.phone);
-                            }
+//                        if (ConnectionsManager.DEBUG_VERSION) {
+//                            FileLog.e("tmessages", "start import contacts");
+//                            for (TLRPC.TL_inputPhoneContact contact : toImport) {
+//                                FileLog.e("tmessages", "add contact " + contact.first_name + " " + contact.last_name + " " + contact.phone);
+//                            }
+//                        }
+                        final int count = (int)Math.ceil(toImport.size() / 500.0f);
+                        for (int a = 0; a < count; a++) {
+                            ArrayList<TLRPC.TL_inputPhoneContact> finalToImport = new ArrayList<TLRPC.TL_inputPhoneContact>();
+                            finalToImport.addAll(toImport.subList(a * 500, Math.min((a + 1) * 500, toImport.size())));
+                            TLRPC.TL_contacts_importContacts req = new TLRPC.TL_contacts_importContacts();
+                            req.contacts = finalToImport;
+                            req.replace = false;
+                            final boolean isLastQuery = a == count - 1;
+                            ConnectionsManager.Instance.performRpc(req, new RPCRequest.RPCRequestDelegate() {
+                                @Override
+                                public void run(TLObject response, TLRPC.TL_error error) {
+                                    if (error == null) {
+                                        FileLog.e("tmessages", "contacts imported");
+                                        if (isLastQuery && !contactsMap.isEmpty()) {
+                                            MessagesStorage.Instance.putCachedPhoneBook(contactsMap);
+                                        }
+                                        TLRPC.TL_contacts_importedContacts res = (TLRPC.TL_contacts_importedContacts)response;
+                                        MessagesStorage.Instance.putUsersAndChats(res.users, null, true, true);
+                                        ArrayList<TLRPC.TL_contact> cArr = new ArrayList<TLRPC.TL_contact>();
+                                        for (TLRPC.TL_importedContact c : res.imported) {
+                                            TLRPC.TL_contact contact = new TLRPC.TL_contact();
+                                            contact.user_id = c.user_id;
+                                            cArr.add(contact);
+                                        }
+                                        processLoadedContacts(cArr, res.users, 2);
+                                    } else {
+                                        FileLog.e("tmessages", "import contacts error " + error.text);
+                                    }
+                                    if (isLastQuery) {
+                                        Utilities.stageQueue.postRunnable(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                contactsBookSPhones = contactsBookShort;
+                                                contactsBook = contactsMap;
+                                                contactsSyncInProgress = false;
+                                                contactsBookLoaded = true;
+                                                if (first) {
+                                                    contactsLoaded = true;
+                                                }
+                                                if (!delayedContactsUpdate.isEmpty() && contactsLoaded && contactsBookLoaded) {
+                                                    applyContactsUpdates(delayedContactsUpdate, null, null, null);
+                                                    delayedContactsUpdate.clear();
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            }, null, true, RPCRequest.RPCRequestClassGeneric | RPCRequest.RPCRequestClassFailOnServerErrors | RPCRequest.RPCRequestClassCanCompress);
                         }
-                        TLRPC.TL_contacts_importContacts req = new TLRPC.TL_contacts_importContacts();
-                        req.contacts = toImport;
-                        req.replace = false;
-                        ConnectionsManager.Instance.performRpc(req, new RPCRequest.RPCRequestDelegate() {
+                    } else {
+                        Utilities.stageQueue.postRunnable(new Runnable() {
                             @Override
-                            public void run(TLObject response, TLRPC.TL_error error) {
-                                if (error == null) {
-                                    FileLog.e("tmessages", "contacts imported");
-                                    if (!contactsMap.isEmpty()) {
-                                        MessagesStorage.Instance.putCachedPhoneBook(contactsMap);
-                                    }
-                                    TLRPC.TL_contacts_importedContacts res = (TLRPC.TL_contacts_importedContacts)response;
-                                    MessagesStorage.Instance.putUsersAndChats(res.users, null, true, true);
-                                    ArrayList<TLRPC.TL_contact> cArr = new ArrayList<TLRPC.TL_contact>();
-                                    for (TLRPC.TL_importedContact c : res.imported) {
-                                        TLRPC.TL_contact contact = new TLRPC.TL_contact();
-                                        contact.user_id = c.user_id;
-                                        cArr.add(contact);
-                                    }
-                                    processLoadedContacts(cArr, res.users, 2);
-                                } else {
-                                    FileLog.e("tmessages", "import contacts error " + error.text);
+                            public void run() {
+                                contactsBookSPhones = contactsBookShort;
+                                contactsBook = contactsMap;
+                                contactsSyncInProgress = false;
+                                contactsBookLoaded = true;
+                                if (first) {
+                                    contactsLoaded = true;
+                                }
+                                if (!delayedContactsUpdate.isEmpty() && contactsLoaded && contactsBookLoaded) {
+                                    applyContactsUpdates(delayedContactsUpdate, null, null, null);
+                                    delayedContactsUpdate.clear();
                                 }
                             }
-                        }, null, true, RPCRequest.RPCRequestClassGeneric | RPCRequest.RPCRequestClassFailOnServerErrors | RPCRequest.RPCRequestClassCanCompress);
-                    } else {
+                        });
                         Utilities.RunOnUIThread(new Runnable() {
                             @Override
                             public void run() {
@@ -628,6 +658,22 @@ public class ContactsController {
                         });
                     }
                 } else {
+                    Utilities.stageQueue.postRunnable(new Runnable() {
+                        @Override
+                        public void run() {
+                            contactsBookSPhones = contactsBookShort;
+                            contactsBook = contactsMap;
+                            contactsSyncInProgress = false;
+                            contactsBookLoaded = true;
+                            if (first) {
+                                contactsLoaded = true;
+                            }
+                            if (!delayedContactsUpdate.isEmpty() && contactsLoaded && contactsBookLoaded) {
+                                applyContactsUpdates(delayedContactsUpdate, null, null, null);
+                                delayedContactsUpdate.clear();
+                            }
+                        }
+                    });
                     if (!contactsMap.isEmpty()) {
                         MessagesStorage.Instance.putCachedPhoneBook(contactsMap);
                     }

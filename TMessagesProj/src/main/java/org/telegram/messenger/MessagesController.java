@@ -34,8 +34,8 @@ import android.util.SparseArray;
 
 import org.telegram.objects.MessageObject;
 import org.telegram.objects.PhotoObject;
-import org.telegram.ui.ApplicationLoader;
 import org.telegram.ui.LaunchActivity;
+import org.telegram.ui.ApplicationLoader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -1331,9 +1331,9 @@ public class MessagesController implements NotificationCenter.NotificationCenter
         });
     }
 
-    public TLRPC.TL_photo generatePhotoSizes(String path) {
+    public TLRPC.TL_photo generatePhotoSizes(String path, Uri imageUri) {
         long time = System.currentTimeMillis();
-        Bitmap bitmap = FileLoader.loadBitmap(path, 800, 800);
+        Bitmap bitmap = FileLoader.loadBitmap(path, imageUri, 800, 800);
         ArrayList<TLRPC.PhotoSize> sizes = new ArrayList<TLRPC.PhotoSize>();
         TLRPC.PhotoSize size = FileLoader.scaleAndSaveImage(bitmap, 90, 90, 55, true);
         if (size != null) {
@@ -4444,17 +4444,19 @@ public class MessagesController implements NotificationCenter.NotificationCenter
 
     private void updateInterfaceWithMessages(long uid, ArrayList<MessageObject> messages) {
         MessageObject lastMessage = null;
-        int lastDate = 0;
         TLRPC.TL_dialog dialog = dialogs_dict.get(uid);
+
+        boolean isEncryptedChat = ((int)uid) == 0;
 
         NotificationCenter.Instance.postNotificationName(didReceivedNewMessages, uid, messages);
 
         for (MessageObject message : messages) {
-            if (lastMessage == null || message.messageOwner.date > lastDate) {
+            if (lastMessage == null || (!isEncryptedChat && message.messageOwner.id > lastMessage.messageOwner.id || isEncryptedChat && message.messageOwner.id < lastMessage.messageOwner.id) || message.messageOwner.date > lastMessage.messageOwner.date) {
                 lastMessage = message;
-                lastDate = message.messageOwner.date;
             }
         }
+
+        boolean changed = false;
 
         if (dialog == null) {
             dialog = new TLRPC.TL_dialog();
@@ -4465,29 +4467,37 @@ public class MessagesController implements NotificationCenter.NotificationCenter
             dialogs_dict.put(uid, dialog);
             dialogs.add(dialog);
             dialogMessage.put(lastMessage.messageOwner.id, lastMessage);
+            changed = true;
         } else {
-            dialogMessage.remove(dialog.top_message);
-            dialog.top_message = lastMessage.messageOwner.id;
-            dialog.last_message_date = lastMessage.messageOwner.date;
-            dialogMessage.put(lastMessage.messageOwner.id, lastMessage);
+            if (dialog.top_message > 0 && lastMessage.messageOwner.id > 0 && lastMessage.messageOwner.id > dialog.top_message ||
+                    dialog.top_message < 0 && lastMessage.messageOwner.id < 0 && lastMessage.messageOwner.id < dialog.top_message ||
+                    dialog.last_message_date < lastMessage.messageOwner.date) {
+                dialogMessage.remove(dialog.top_message);
+                dialog.top_message = lastMessage.messageOwner.id;
+                dialog.last_message_date = lastMessage.messageOwner.date;
+                dialogMessage.put(lastMessage.messageOwner.id, lastMessage);
+                changed = true;
+            }
         }
 
-        dialogsServerOnly.clear();
-        Collections.sort(dialogs, new Comparator<TLRPC.TL_dialog>() {
-            @Override
-            public int compare(TLRPC.TL_dialog tl_dialog, TLRPC.TL_dialog tl_dialog2) {
-                if (tl_dialog.last_message_date == tl_dialog2.last_message_date) {
-                    return 0;
-                } else if (tl_dialog.last_message_date < tl_dialog2.last_message_date) {
-                    return 1;
-                } else {
-                    return -1;
+        if (changed) {
+            dialogsServerOnly.clear();
+            Collections.sort(dialogs, new Comparator<TLRPC.TL_dialog>() {
+                @Override
+                public int compare(TLRPC.TL_dialog tl_dialog, TLRPC.TL_dialog tl_dialog2) {
+                    if (tl_dialog.last_message_date == tl_dialog2.last_message_date) {
+                        return 0;
+                    } else if (tl_dialog.last_message_date < tl_dialog2.last_message_date) {
+                        return 1;
+                    } else {
+                        return -1;
+                    }
                 }
-            }
-        });
-        for (TLRPC.TL_dialog d : dialogs) {
-            if ((int)d.id != 0) {
-                dialogsServerOnly.add(d);
+            });
+            for (TLRPC.TL_dialog d : dialogs) {
+                if ((int)d.id != 0) {
+                    dialogsServerOnly.add(d);
+                }
             }
         }
     }
@@ -4648,6 +4658,21 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                             newMessage.media.document.thumb.type = "s";
                         }
                         newMessage.media.document.dc_id = message.file.dc_id;
+                    } else if (decryptedMessage.media instanceof TLRPC.TL_decryptedMessageMediaAudio) {
+                        if (decryptedMessage.media.key.length != 32 || decryptedMessage.media.iv.length != 32) {
+                            return null;
+                        }
+                        newMessage.media = new TLRPC.TL_messageMediaAudio();
+                        newMessage.media.audio = new TLRPC.TL_audioEncrypted();
+                        newMessage.media.audio.id = message.file.id;
+                        newMessage.media.audio.access_hash = message.file.access_hash;
+                        newMessage.media.audio.user_id = decryptedMessage.media.user_id;
+                        newMessage.media.audio.date = message.date;
+                        newMessage.media.audio.size = message.file.size;
+                        newMessage.media.audio.key = decryptedMessage.media.key;
+                        newMessage.media.audio.iv = decryptedMessage.media.iv;
+                        newMessage.media.audio.dc_id = message.file.dc_id;
+                        newMessage.media.audio.duration = decryptedMessage.media.duration;
                     } else {
                         return null;
                     }
@@ -4903,7 +4928,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     TLRPC.TL_messages_requestEncryption req2 = new TLRPC.TL_messages_requestEncryption();
                     req2.g_a = g_a;
                     req2.user_id = getInputUser(user);
-                    req2.random_id = (int)(random.nextDouble() * Integer.MAX_VALUE);
+                    req2.random_id = random.nextInt();
                     ConnectionsManager.Instance.performRpc(req2, new RPCRequest.RPCRequestDelegate() {
                         @Override
                         public void run(final TLObject response, TLRPC.TL_error error) {
