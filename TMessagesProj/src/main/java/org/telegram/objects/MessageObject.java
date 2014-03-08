@@ -252,7 +252,7 @@ public class MessageObject {
         } else {
             messageText = message.message;
         }
-        // Text between two * will be in RED and text between two ^ will be BIG size
+        // Text between two * will be in BLUE and text between two ^ will be BIG size
         messageText = messageText.toString().replaceAll("\\^(.+?)\\^", "<big>$1</big>");
         messageText = messageText.toString().replaceAll("\\*(.+?)\\*", "<font color='blue'>$1</font>");
         messageText = messageText.toString().replace("\n", "<br>");
