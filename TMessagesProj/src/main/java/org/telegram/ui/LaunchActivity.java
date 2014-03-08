@@ -185,8 +185,9 @@ public class LaunchActivity extends ActionBarActivity implements NotificationCen
                 String type = intent.getType();
                 if (type != null && type.equals("text/plain")) {
                     String text = intent.getStringExtra(Intent.EXTRA_TEXT);
+                    String subject = intent.getStringExtra(Intent.EXTRA_SUBJECT);
                     if (text != null && text.length() != 0) {
-                        sendingText = text;
+                        sendingText = subject + "\n" + text;
                     } else {
                         error = true;
                     }
