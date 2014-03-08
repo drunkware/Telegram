@@ -187,7 +187,7 @@ public class LaunchActivity extends ActionBarActivity implements NotificationCen
                     String text = intent.getStringExtra(Intent.EXTRA_TEXT);
                     String subject = intent.getStringExtra(Intent.EXTRA_SUBJECT);
                     if (text != null && text.length() != 0) {
-                        if ( text.startsWith("http://") && subject != null && subject.length() != 0 ) {
+                        if ( text.startsWith("http") && subject != null && subject.length() != 0 ) {
                             sendingText = subject + "\n" + text;
                         } else {
                             sendingText = text;
