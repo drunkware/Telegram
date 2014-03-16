@@ -1629,7 +1629,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
             } else if (msgObj.messageOwner.media.document != null) {
                 document = (TLRPC.TL_document) msgObj.messageOwner.media.document;
             } else if (msgObj.messageOwner.message != null) {
-                message = msgObj.messageOwner.message;
+                message = Emoji.fixSBEmoji(msgObj.messageOwner.message).toString(); //Fix SB encoding if needed before forwarding the message
             } else {
                 // Unknown type, let it continue unchanged [ Maybe show an error to update the code! ]
             }
