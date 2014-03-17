@@ -3313,11 +3313,11 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
                     width = (int)(Math.min(displaySize.x, displaySize.y) / 2.5f);
                     height = width + 100;
                 }
-                if (width > 800) {
-                    width = 800;
+                if (width > 300) {
+                    width = 300;
                 }
-                if (height > 800) {
-                    height = 800;
+                if (height > 300) {
+                    height = 300;
                 }
 
                 PhotoObject photo = PhotoObject.getClosestImageWithSize(message.photoThumbs, width, height);
