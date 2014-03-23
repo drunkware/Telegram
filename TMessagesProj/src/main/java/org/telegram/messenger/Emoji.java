@@ -845,7 +845,7 @@ public class Emoji {
                             drawable.invalidateSelf();
                         }
                     }*/
-                    NotificationCenter.Instance.postNotificationName(999);
+                    NotificationCenter.getInstance().postNotificationName(999);
                 }
             });
 
