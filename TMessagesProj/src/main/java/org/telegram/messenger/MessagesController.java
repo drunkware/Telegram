@@ -1735,7 +1735,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 document.thumb.type = "s";
                 document.id = 0;
                 document.user_id = UserConfig.clientUserId;
-                document.date = ConnectionsManager.Instance.getCurrentTime();
+                document.date = ConnectionsManager.getInstance().getCurrentTime();
                 document.dc_id = 0;
                 document.access_hash = 0;
             } else if (msgObj.messageOwner.message != null) {

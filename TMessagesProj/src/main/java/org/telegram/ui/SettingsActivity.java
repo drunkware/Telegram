@@ -831,7 +831,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                         checkButton.setImageResource(R.drawable.btn_check_off);
                     }
                 } else if (i == AddForwardingInfoRow) {
-                    textView.setText(getStringEntry(R.string.AddForwardingInfo));
+                    textView.setText(LocaleController.getString("AddForwardingInfo", R.string.AddForwardingInfo));
                     divider.setVisibility(View.VISIBLE);
                     boolean enabled = preferences.getBoolean("add_forwarding_info", true);
                     if (enabled) {
@@ -840,7 +840,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                         checkButton.setImageResource(R.drawable.btn_check_off);
                     }
                 } else if (i == InvisibleStatusRow) {
-                    textView.setText(getStringEntry(R.string.InvisibleStatus));
+                    textView.setText(LocaleController.getString("InvisibleStatus", R.string.InvisibleStatus));
                     divider.setVisibility(View.VISIBLE);
                     boolean enabled = preferences.getBoolean("invisible_status", false);
                     if (enabled) {
