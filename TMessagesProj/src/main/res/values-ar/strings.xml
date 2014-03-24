@@ -251,6 +251,7 @@
     <string name="AddForwardingInfo">ادراج معلومات التوجية</string>
     <string name="InvisibleStatus">اخفاء الحالة</string>
     <string name="ContactJoined">اشترك صديق في تيليجرام</string>
+    <string name="Pebble">PEBBLE</string>
 
     <!--media view-->
     <string name="NoMedia">لا توجد وسائط بعد</string>
