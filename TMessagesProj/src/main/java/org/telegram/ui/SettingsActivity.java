@@ -20,9 +20,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.method.LinkMovementMethod;
 import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -88,9 +92,22 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
     private int audioDownloadSection;
     private int audioDownloadChatRow;
     private int audioDownloadPrivateRow;
+    private int telegramFaqRow;
     private int languageRow;
     private int AddForwardingInfoRow;
     private int InvisibleStatusRow;
+
+    private static class LinkMovementMethodMy extends LinkMovementMethod {
+        @Override
+        public boolean onTouchEvent(TextView widget, Spannable buffer, MotionEvent event) {
+            try {
+                return super.onTouchEvent(widget, buffer, event);
+            } catch (Exception e) {
+                FileLog.e("tmessages", e);
+            }
+            return false;
+        }
+    }
 
     @Override
     public boolean onFragmentCreate() {
@@ -182,6 +199,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             clearLogsRow = rowCount++;
             switchBackendButtonRow = rowCount++;
         }
+        telegramFaqRow = rowCount++;
         askQuestionRow = rowCount++;
         logoutRow = rowCount++;
 
@@ -245,91 +263,25 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                     } else if (i == backgroundRow) {
                         ((LaunchActivity)parentActivity).presentFragment(new SettingsWallpapersActivity(), "settings_wallpapers", false);
                     } else if (i == askQuestionRow) {
-                        final SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
-                        int uid = preferences.getInt("support_id", 0);
-                        TLRPC.User supportUser = null;
-                        if (uid != 0) {
-                            supportUser = MessagesController.getInstance().users.get(uid);
-                            if (supportUser == null) {
-                                String userString = preferences.getString("support_user", null);
-                                if (userString != null) {
-                                    try {
-                                        byte[] datacentersBytes = Base64.decode(userString, Base64.DEFAULT);
-                                        if (datacentersBytes != null) {
-                                            SerializedData data = new SerializedData(datacentersBytes);
-                                            supportUser = (TLRPC.User)TLClassStore.Instance().TLdeserialize(data, data.readInt32());
-
-                                        }
-                                    } catch (Exception e) {
-                                        FileLog.e("tmessages", e);
-                                        supportUser = null;
-                                    }
-                                }
-                            }
+                        if (parentActivity == null) {
+                            return;
                         }
-                        if (supportUser == null) {
-                            if (parentActivity == null) {
-                                return;
-                            }
-                            final ProgressDialog progressDialog = new ProgressDialog(parentActivity);
-                            progressDialog.setMessage(parentActivity.getString(R.string.Loading));
-                            progressDialog.setCanceledOnTouchOutside(false);
-                            progressDialog.setCancelable(false);
-                            progressDialog.show();
-                            TLRPC.TL_help_getSupport req = new TLRPC.TL_help_getSupport();
-                            ConnectionsManager.getInstance().performRpc(req, new RPCRequest.RPCRequestDelegate() {
-                                @Override
-                                public void run(TLObject response, TLRPC.TL_error error) {
-                                    if (error == null) {
+                        final TextView message = new TextView(parentActivity);
+                        message.setText(Html.fromHtml(LocaleController.getString("AskAQuestionInfo", R.string.AskAQuestionInfo)));
+                        message.setTextSize(18);
+                        message.setPadding(Utilities.dp(8), Utilities.dp(5), Utilities.dp(8), Utilities.dp(6));
+                        message.setMovementMethod(new LinkMovementMethodMy());
 
-                                        final TLRPC.TL_help_support res = (TLRPC.TL_help_support)response;
-                                        Utilities.RunOnUIThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                if (parentActivity == null) {
-                                                    return;
-                                                }
-                                                SharedPreferences.Editor editor = preferences.edit();
-                                                editor.putInt("support_id", res.user.id);
-                                                SerializedData data = new SerializedData();
-                                                res.user.serializeToStream(data);
-                                                editor.putString("support_user", Base64.encodeToString(data.toByteArray(), Base64.DEFAULT));
-                                                editor.commit();
-                                                try {
-                                                    progressDialog.dismiss();
-                                                } catch (Exception e) {
-                                                    FileLog.e("tmessages", e);
-                                                }
-                                                MessagesController.getInstance().users.put(res.user.id, res.user);
-                                                ChatActivity fragment = new ChatActivity();
-                                                Bundle bundle = new Bundle();
-                                                bundle.putInt("user_id", res.user.id);
-                                                fragment.setArguments(bundle);
-                                                ((LaunchActivity)parentActivity).presentFragment(fragment, "chat" + Math.random(), false);
-                                            }
-                                        });
-                                    } else {
-                                        Utilities.RunOnUIThread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                try {
-                                                    progressDialog.dismiss();
-                                                } catch (Exception e) {
-                                                    FileLog.e("tmessages", e);
-                                                }
-                                            }
-                                        });
-                                    }
-                                }
-                            }, null, true, RPCRequest.RPCRequestClassGeneric);
-                        } else {
-                            MessagesController.getInstance().users.putIfAbsent(supportUser.id, supportUser);
-                            ChatActivity fragment = new ChatActivity();
-                            Bundle bundle = new Bundle();
-                            bundle.putInt("user_id", supportUser.id);
-                            fragment.setArguments(bundle);
-                            ((LaunchActivity)parentActivity).presentFragment(fragment, "chat" + Math.random(), false);
-                        }
+                        AlertDialog.Builder builder = new AlertDialog.Builder(parentActivity);
+                        builder.setView(message);
+                        builder.setPositiveButton(LocaleController.getString("AskButton", R.string.AskButton), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                performAskAQuestion();
+                            }
+                        });
+                        builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
+                        builder.show().setCanceledOnTouchOutside(true);
                     } else if (i == sendLogsRow) {
                         sendLogs();
                     } else if (i == clearLogsRow) {
@@ -413,7 +365,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                             listView.invalidateViews();
                         }
                     } else if (i == languageRow) {
-                        ((LaunchActivity)parentActivity).presentFragment(new LanguageSelectActivity(), "settings_wallpapers", false);
+                        ((LaunchActivity)parentActivity).presentFragment(new LanguageSelectActivity(), "settings_lang", false);
                     } else if (i == switchBackendButtonRow) {
                         AlertDialog.Builder builder = new AlertDialog.Builder(parentActivity);
                         builder.setMessage(LocaleController.getString("AreYouSure", R.string.AreYouSure));
@@ -426,6 +378,13 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                         });
                         builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
                         builder.show().setCanceledOnTouchOutside(true);
+                    } else if (i == telegramFaqRow) {
+                        try {
+                            Intent pickIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(LocaleController.getString("TelegramFaqUrl", R.string.TelegramFaqUrl)));
+                            parentActivity.startActivity(pickIntent);
+                        } catch (Exception e) {
+                            FileLog.e("tmessages", e);
+                        }
                     } else if (i == AddForwardingInfoRow) {
                         SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
                         boolean value = preferences.getBoolean("add_forwarding_info", true);
@@ -445,10 +404,6 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                             listView.invalidateViews();
                         }
                     }
-//                else if (i == 6) {
-//                    UserConfig.saveIncomingPhotos = !UserConfig.saveIncomingPhotos;
-//                    listView.invalidateViews();
-//                }
                 }
             });
 
@@ -466,10 +421,111 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         return fragmentView;
     }
 
+    public void performAskAQuestion() {
+        final SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
+        int uid = preferences.getInt("support_id", 0);
+        TLRPC.User supportUser = null;
+        if (uid != 0) {
+            supportUser = MessagesController.getInstance().users.get(uid);
+            if (supportUser == null) {
+                String userString = preferences.getString("support_user", null);
+                if (userString != null) {
+                    try {
+                        byte[] datacentersBytes = Base64.decode(userString, Base64.DEFAULT);
+                        if (datacentersBytes != null) {
+                            SerializedData data = new SerializedData(datacentersBytes);
+                            supportUser = (TLRPC.User)TLClassStore.Instance().TLdeserialize(data, data.readInt32());
+
+                        }
+                    } catch (Exception e) {
+                        FileLog.e("tmessages", e);
+                        supportUser = null;
+                    }
+                }
+            }
+        }
+        if (supportUser == null) {
+            if (parentActivity == null) {
+                return;
+            }
+            final ProgressDialog progressDialog = new ProgressDialog(parentActivity);
+            progressDialog.setMessage(parentActivity.getString(R.string.Loading));
+            progressDialog.setCanceledOnTouchOutside(false);
+            progressDialog.setCancelable(false);
+            progressDialog.show();
+            TLRPC.TL_help_getSupport req = new TLRPC.TL_help_getSupport();
+            ConnectionsManager.getInstance().performRpc(req, new RPCRequest.RPCRequestDelegate() {
+                @Override
+                public void run(TLObject response, TLRPC.TL_error error) {
+                    if (error == null) {
+
+                        final TLRPC.TL_help_support res = (TLRPC.TL_help_support)response;
+                        Utilities.RunOnUIThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (parentActivity == null) {
+                                    return;
+                                }
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putInt("support_id", res.user.id);
+                                SerializedData data = new SerializedData();
+                                res.user.serializeToStream(data);
+                                editor.putString("support_user", Base64.encodeToString(data.toByteArray(), Base64.DEFAULT));
+                                editor.commit();
+                                try {
+                                    progressDialog.dismiss();
+                                } catch (Exception e) {
+                                    FileLog.e("tmessages", e);
+                                }
+                                MessagesController.getInstance().users.put(res.user.id, res.user);
+                                ChatActivity fragment = new ChatActivity();
+                                Bundle bundle = new Bundle();
+                                bundle.putInt("user_id", res.user.id);
+                                fragment.setArguments(bundle);
+                                ((LaunchActivity)parentActivity).presentFragment(fragment, "chat" + Math.random(), false);
+                            }
+                        });
+                    } else {
+                        Utilities.RunOnUIThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    progressDialog.dismiss();
+                                } catch (Exception e) {
+                                    FileLog.e("tmessages", e);
+                                }
+                            }
+                        });
+                    }
+                }
+            }, null, true, RPCRequest.RPCRequestClassGeneric);
+        } else {
+            MessagesController.getInstance().users.putIfAbsent(supportUser.id, supportUser);
+            ChatActivity fragment = new ChatActivity();
+            Bundle bundle = new Bundle();
+            bundle.putInt("user_id", supportUser.id);
+            fragment.setArguments(bundle);
+            ((LaunchActivity)parentActivity).presentFragment(fragment, "chat" + Math.random(), false);
+        }
+    }
+
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    public void onActivityResultFragment(int requestCode, int resultCode, Intent data) {
         avatarUpdater.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void saveSelfArgs(Bundle args) {
+        if (avatarUpdater != null && avatarUpdater.currentPicturePath != null) {
+            args.putString("path", avatarUpdater.currentPicturePath);
+        }
+    }
+
+    @Override
+    public void restoreSelfArgs(Bundle args) {
+        if (avatarUpdater != null) {
+            avatarUpdater.currentPicturePath = args.getString("path");
+        }
     }
 
     @Override
@@ -579,7 +635,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             return i == textSizeRow || i == enableAnimationsRow || i == blockedRow || i == notificationRow || i == backgroundRow ||
                     i == askQuestionRow || i == sendLogsRow || i == sendByEnterRow || i == terminateSessionsRow || i == photoDownloadPrivateRow ||
                     i == photoDownloadChatRow || i == clearLogsRow || i == audioDownloadChatRow || i == audioDownloadPrivateRow || i == languageRow ||
-                    i == switchBackendButtonRow || i == AddForwardingInfoRow || i == InvisibleStatusRow;
+                    i == switchBackendButtonRow || i == telegramFaqRow || i == AddForwardingInfoRow || i == InvisibleStatusRow;
         }
 
         @Override
@@ -622,6 +678,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                     button2.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
+                            if (parentActivity == null) {
+                                return;
+                            }
 
                             AlertDialog.Builder builder = new AlertDialog.Builder(parentActivity);
 
@@ -788,6 +847,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 } else if (i == switchBackendButtonRow) {
                     textView.setText("Switch Backend");
                     divider.setVisibility(View.VISIBLE);
+                } else if (i == telegramFaqRow) {
+                    textView.setText(LocaleController.getString("TelegramFAQ", R.string.TelegramFaq));
+                    divider.setVisibility(View.VISIBLE);
                 }
             } else if (type == 3) {
                 if (view == null) {
@@ -941,7 +1003,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 return 5;
             } else if (i == enableAnimationsRow || i == sendByEnterRow || i == photoDownloadChatRow || i == photoDownloadPrivateRow || i == audioDownloadChatRow || i == audioDownloadPrivateRow || i == AddForwardingInfoRow || i == InvisibleStatusRow) {
                 return 3;
-            } else if (i == numberRow || i == notificationRow || i == blockedRow || i == backgroundRow || i == askQuestionRow || i == sendLogsRow || i == terminateSessionsRow || i == clearLogsRow || i == switchBackendButtonRow) {
+            } else if (i == numberRow || i == notificationRow || i == blockedRow || i == backgroundRow || i == askQuestionRow || i == sendLogsRow || i == terminateSessionsRow || i == clearLogsRow || i == switchBackendButtonRow || i == telegramFaqRow) {
                 return 2;
             } else if (i == logoutRow) {
                 return 4;

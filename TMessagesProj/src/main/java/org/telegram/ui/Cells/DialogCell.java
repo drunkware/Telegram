@@ -153,6 +153,14 @@ public class DialogCell extends BaseCell {
     }
 
     @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (avatarImage != null) {
+            avatarImage.clearImage();
+        }
+    }
+
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), Utilities.dp(70));
     }
@@ -457,7 +465,7 @@ public class DialogCell extends BaseCell {
                     } else {
                         if (chat != null) {
                             String name = "";
-                            if (message.messageOwner.from_id == UserConfig.clientUserId) {
+                            if (message.isFromMe()) {
                                 name = LocaleController.getString("FromYou", R.string.FromYou);
                             } else {
                                 if (fromUser != null) {
@@ -499,7 +507,7 @@ public class DialogCell extends BaseCell {
                     }
                 }
 
-                if (message.messageOwner.from_id == UserConfig.clientUserId) {
+                if (message.isFromMe()) {
                     if (message.messageOwner.send_state == MessagesController.MESSAGE_SEND_STATE_SENDING) {
                         drawCheck1 = false;
                         drawCheck2 = false;
