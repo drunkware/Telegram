@@ -327,11 +327,20 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                 photoWidth = (int) (Math.min(Utilities.displaySize.x, Utilities.displaySize.y) * 0.7f);
                 photoHeight = photoWidth + Utilities.dp(100);
 
-                if (photoWidth > 800) {
-                    photoWidth = 800;
-                }
-                if (photoHeight > 800) {
-                    photoHeight = 800;
+                if (messageObject.type == 8) {
+                    if (photoWidth > 800) {
+                        photoWidth = 800;
+                    }
+                    if (photoHeight > 800) {
+                        photoHeight = 800;
+                    }
+                } else {
+                    if (photoWidth > 400) {
+                        photoWidth = 400;
+                    }
+                    if (photoHeight > 400) {
+                        photoHeight = 400;
+                    }
                 }
 
                 currentPhotoObject = PhotoObject.getClosestImageWithSize(messageObject.photoThumbs, photoWidth, photoHeight);
