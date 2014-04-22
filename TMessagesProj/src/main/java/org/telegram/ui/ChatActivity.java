@@ -857,9 +857,9 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
                         messsageEditText.setText(NewText, TextView.BufferType.EDITABLE);
                     }
 
-                    String message = charSequence.toString().trim();
-                    message = message.replaceAll("\n\n+", "\n\n");
-                    message = message.replaceAll(" +", " ");
+//                    String message = charSequence.toString().trim();
+//                    message = message.replaceAll("\n\n+", "\n\n");
+//                    message = message.replaceAll(" +", " ");
                     sendButton.setEnabled(message.length() != 0);
                     checkSendButton();
 
