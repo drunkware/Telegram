@@ -200,6 +200,7 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
     private long chatLeaveTime = 0;
 
     private final static int copy = 1;
+    private final static int quoteforward = 12;
     private final static int forward = 2;
     private final static int delete = 3;
     private final static int chat_enc_timer = 4;
@@ -218,8 +219,9 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
             menu.clear();
             MenuInflater inflater = actionMode.getMenuInflater();
             if (currentEncryptedChat == null) {
-                menu.add(Menu.NONE, copy, Menu.NONE, LocaleController.getString("Copy", R.string.Copy)).setIcon(R.drawable.ic_ab_fwd_copy);
+                menu.add(Menu.NONE, quoteforward, Menu.NONE, LocaleController.getString("QuoteForward", R.string.QuoteForward)).setIcon(R.drawable.ic_ab_fwd_quoteforward);
                 menu.add(Menu.NONE, forward, Menu.NONE, LocaleController.getString("Forward", R.string.Forward)).setIcon(R.drawable.ic_ab_fwd_forward);
+                menu.add(Menu.NONE, copy, Menu.NONE, LocaleController.getString("Copy", R.string.Copy)).setIcon(R.drawable.ic_ab_fwd_copy);
                 menu.add(Menu.NONE, delete, Menu.NONE, LocaleController.getString("Delete", R.string.Delete)).setIcon(R.drawable.ic_ab_fwd_delete);
             } else {
                 menu.add(Menu.NONE, copy, Menu.NONE, LocaleController.getString("Copy", R.string.Copy)).setIcon(R.drawable.ic_ab_fwd_copy);
@@ -279,7 +281,14 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
                     MessagesController.getInstance().deleteMessages(ids, random_ids, currentEncryptedChat);
                     break;
                 }
-                case forward: {
+                case forward: case quoteforward: {
+
+                    if (menuItem.getItemId() == quoteforward) {
+                        MessagesController.QuoteForward = true;
+                    } else {
+                        MessagesController.QuoteForward = false;
+                    }
+
                     MessagesActivity fragment = new MessagesActivity();
                     fragment.selectAlertString = R.string.ForwardMessagesTo;
                     fragment.selectAlertStringDesc = "ForwardMessagesTo";
@@ -3014,12 +3023,12 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
                     } else if (type == 1) {
                         items = new CharSequence[] {LocaleController.getString("Delete", R.string.Delete)};
                     } else if (type == 2) {
-                        items = new CharSequence[] {LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
+                        items = new CharSequence[] {LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
                     } else if (type == 3) {
-                        items = new CharSequence[] {LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Copy", R.string.Copy), LocaleController.getString("Delete", R.string.Delete)};
+                        items = new CharSequence[] {LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Copy", R.string.Copy), LocaleController.getString("Delete", R.string.Delete)};
                     } else if (type == 4) {
                         items = new CharSequence[] {LocaleController.getString(selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaDocument ? "SaveToDownloads" : "SaveToGallery",
-                                selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaDocument ? R.string.SaveToDownloads : R.string.SaveToGallery), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
+                                selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaDocument ? R.string.SaveToDownloads : R.string.SaveToGallery), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
                     } else if (type == 5) {
                         items = new CharSequence[] {LocaleController.getString("ApplyLocalizationFile", R.string.ApplyLocalizationFile), LocaleController.getString("SaveToDownloads", R.string.SaveToDownloads), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
                     }
@@ -3055,19 +3064,23 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
                             if (currentEncryptedChat == null) {
                                 if (i == 0) {
                                     processSelectedOption(2);
-                                } else if (i == 1) {
+                                } else if (i == 1) {            // Forward (without forwarded from tag)
+                                    processSelectedOption(4);
+                                } else if (i == 2) {
                                     processSelectedOption(1);
                                 }
                             } else {
                                 processSelectedOption(1);
                             }
-                        } else if (type == 3) {
+                        } else if (type == 3) {                 // Text message
                             if (currentEncryptedChat == null) {
-                                if (i == 0) {
+                                if (i == 0) {                   // Quote and Forward
                                     processSelectedOption(2);
-                                } else if (i == 1) {
+                                } else if (i == 1) {            // Forward (without forwarded from tag)
+                                    processSelectedOption(4);
+                                } else if (i == 2) {            // Copy
                                     processSelectedOption(3);
-                                } else if (i == 2) {
+                                } else if (i == 3) {            // Delete
                                     processSelectedOption(1);
                                 }
                             } else {
@@ -3079,7 +3092,7 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
                             }
                         } else if (type == 4) {
                             if (currentEncryptedChat == null) {
-                                if (i == 0) {
+                                if (i == 0) {                   // Save to gallery
                                     String fileName = selectedObject.getFileName();
                                     if (selectedObject.type == 3) {
                                         MediaController.saveFile(fileName, selectedObject.messageOwner.attachPath, parentActivity, 1, null);
@@ -3088,9 +3101,11 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
                                     } else if (selectedObject.type == 8 || selectedObject.type == 9) {
                                         MediaController.saveFile(fileName, selectedObject.messageOwner.attachPath, parentActivity, 2, selectedObject.messageOwner.media.document.file_name);
                                     }
-                                } else if (i == 1) {
+                                } else if (i == 1) {            // Quote and Forward
                                     processSelectedOption(2);
-                                } else if (i == 2) {
+                                } else if (i == 2) {            // Forward (without forwarded from tag)
+                                    processSelectedOption(4);
+                                } else if (i == 3) {            // Delete
                                     processSelectedOption(1);
                                 }
                             } else {
@@ -3239,11 +3254,18 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
                 MessagesController.getInstance().deleteMessages(ids, random_ids, currentEncryptedChat);
                 selectedObject = null;
             }
-        } else if (option == 2) {
+        } else if (option == 2 || option == 4) {
             if (selectedObject != null) {
                 if (parentActivity == null) {
                     return;
                 }
+
+                if (option == 2) {
+                    MessagesController.QuoteForward = true;
+                } else {
+                    MessagesController.QuoteForward = false;
+                }
+
                 forwaringMessage = selectedObject;
                 selectedObject = null;
 

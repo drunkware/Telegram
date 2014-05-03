@@ -103,6 +103,8 @@ public class MessagesController implements NotificationCenter.NotificationCenter
 
     public MessageObject currentPushMessage;
 
+    public static boolean QuoteForward;
+
     private class UserActionUpdates extends TLRPC.Updates {
 
     }
@@ -1740,8 +1742,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
     private void sendMessage(String message, double lat, double lon, TLRPC.TL_photo photo, TLRPC.TL_video video, MessageObject msgObj, TLRPC.FileLocation location, TLRPC.User user, TLRPC.TL_document document, TLRPC.TL_audio audio, long peer) {
 // FAD Code starts ---------------------------------------
         // If a message came as an object change it back as normal
-        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
-        if (msgObj != null && !preferences.getBoolean("add_forwarding_info", true)) {
+        if (msgObj != null && !QuoteForward) {
             if (msgObj.messageOwner.media.photo != null) {
                 photo = (TLRPC.TL_photo) msgObj.messageOwner.media.photo;
             } else if (msgObj.messageOwner.media.geo != null) {
@@ -1759,6 +1760,11 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 if (video.thumb == null) {
                     // TODO: Show an error (video file might not be downloaded)
                     //Toast.makeText(getApplicationContext(), "this is my Toast message!!! =)", Toast.LENGTH_LONG).show();
+
+                    // Download the file first! (but how can i wait until the download is finish then continue from here!!)
+//                    FileLoader.getInstance().loadFile(msgObj.messageOwner.media.video, null, null, null);
+//                    thumb = ThumbnailUtils.createVideoThumbnail(video.path, MediaStore.Video.Thumbnails.MINI_KIND);
+//                    video.thumb = FileLoader.scaleAndSaveImage(thumb, 90, 90, 55, false);
                     return;
                 }
                 video.thumb.type = "s";
@@ -1788,6 +1794,19 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 document.date = ConnectionsManager.getInstance().getCurrentTime();
                 document.dc_id = 0;
                 document.access_hash = 0;
+            } else if (msgObj.messageOwner.media.audio != null) {
+                audio = (TLRPC.TL_audio) msgObj.messageOwner.media.audio;
+                if (msgObj.messageOwner.attachPath != null && msgObj.messageOwner.attachPath.length() != 0) {
+                    audio.path = msgObj.messageOwner.attachPath;
+                } else {
+                    audio.path = Utilities.getCacheDir() + "/" + msgObj.getFileName();
+                }
+
+                File f = new File(audio.path);
+                if (!f.exists() || f.length() == 0) {
+                    audio.path = Utilities.getCacheDir() + "/1_" + audio.id + ".m4a";
+                }
+                audio.date = ConnectionsManager.getInstance().getCurrentTime();
             } else if (msgObj.messageOwner.message != null) {
                 message = Emoji.fixSBEmoji(msgObj.messageOwner.message).toString(); //Fix SB encoding if needed before forwarding the message
             } else {

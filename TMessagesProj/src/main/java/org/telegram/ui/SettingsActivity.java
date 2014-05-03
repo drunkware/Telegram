@@ -94,7 +94,6 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
     private int audioDownloadPrivateRow;
     private int telegramFaqRow;
     private int languageRow;
-    private int AddForwardingInfoRow;
     private int InvisibleStatusRow;
 
     private static class LinkMovementMethodMy extends LinkMovementMethod {
@@ -177,7 +176,6 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         numberRow = rowCount++;
         settingsSectionRow = rowCount++;
         enableAnimationsRow = rowCount++;
-        AddForwardingInfoRow = rowCount++;
         InvisibleStatusRow = rowCount++;
         languageRow = rowCount++;
         notificationRow = rowCount++;
@@ -384,15 +382,6 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                             parentActivity.startActivity(pickIntent);
                         } catch (Exception e) {
                             FileLog.e("tmessages", e);
-                        }
-                    } else if (i == AddForwardingInfoRow) {
-                        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
-                        boolean value = preferences.getBoolean("add_forwarding_info", true);
-                        SharedPreferences.Editor editor = preferences.edit();
-                        editor.putBoolean("add_forwarding_info", !value);
-                        editor.commit();
-                        if (listView != null) {
-                            listView.invalidateViews();
                         }
                     } else if (i == InvisibleStatusRow) {
                         SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
@@ -635,7 +624,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             return i == textSizeRow || i == enableAnimationsRow || i == blockedRow || i == notificationRow || i == backgroundRow ||
                     i == askQuestionRow || i == sendLogsRow || i == sendByEnterRow || i == terminateSessionsRow || i == photoDownloadPrivateRow ||
                     i == photoDownloadChatRow || i == clearLogsRow || i == audioDownloadChatRow || i == audioDownloadPrivateRow || i == languageRow ||
-                    i == switchBackendButtonRow || i == telegramFaqRow || i == AddForwardingInfoRow || i == InvisibleStatusRow;
+                    i == switchBackendButtonRow || i == telegramFaqRow || i == InvisibleStatusRow;
         }
 
         @Override
@@ -914,15 +903,6 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                     } else {
                         checkButton.setImageResource(R.drawable.btn_check_off);
                     }
-                } else if (i == AddForwardingInfoRow) {
-                    textView.setText(LocaleController.getString("AddForwardingInfo", R.string.AddForwardingInfo));
-                    divider.setVisibility(View.VISIBLE);
-                    boolean enabled = preferences.getBoolean("add_forwarding_info", true);
-                    if (enabled) {
-                        checkButton.setImageResource(R.drawable.btn_check_on);
-                    } else {
-                        checkButton.setImageResource(R.drawable.btn_check_off);
-                    }
                 } else if (i == InvisibleStatusRow) {
                     textView.setText(LocaleController.getString("InvisibleStatus", R.string.InvisibleStatus));
                     divider.setVisibility(View.VISIBLE);
@@ -1001,7 +981,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 return 1;
             } else if (i == textSizeRow || i == languageRow) {
                 return 5;
-            } else if (i == enableAnimationsRow || i == sendByEnterRow || i == photoDownloadChatRow || i == photoDownloadPrivateRow || i == audioDownloadChatRow || i == audioDownloadPrivateRow || i == AddForwardingInfoRow || i == InvisibleStatusRow) {
+            } else if (i == enableAnimationsRow || i == sendByEnterRow || i == photoDownloadChatRow || i == photoDownloadPrivateRow || i == audioDownloadChatRow || i == audioDownloadPrivateRow || i == InvisibleStatusRow) {
                 return 3;
             } else if (i == numberRow || i == notificationRow || i == blockedRow || i == backgroundRow || i == askQuestionRow || i == sendLogsRow || i == terminateSessionsRow || i == clearLogsRow || i == switchBackendButtonRow || i == telegramFaqRow) {
                 return 2;

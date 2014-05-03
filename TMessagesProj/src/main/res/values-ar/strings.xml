@@ -253,7 +253,6 @@
     <string name="AutomaticPhotoDownloadGroups">المجموعات</string>
     <string name="AutomaticPhotoDownloadPrivateChats">المحادثات</string>
     <string name="Events">الأحداث</string>
-    <string name="AddForwardingInfo">ادراج معلومات التوجية</string>
     <string name="InvisibleStatus">اخفاء الحالة</string>
     <string name="ContactJoined">اشترك صديق في تيليجرام</string>
     <string name="Pebble">PEBBLE</string>
@@ -298,6 +297,7 @@
     <string name="Copy">نسخ</string>
     <string name="Delete">حذف</string>
     <string name="Forward">إعادة توجيه</string>
+    <string name="QuoteForward">إعادة توجيه باقتباس</string>
     <string name="Retry">إعادة المحاولة</string>
     <string name="FromCamera">من الكاميرا</string>
     <string name="FromGalley">من الجهاز</string>

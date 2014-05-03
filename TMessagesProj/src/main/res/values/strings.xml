@@ -253,7 +253,6 @@
     <string name="AutomaticPhotoDownloadGroups">Groups</string>
     <string name="AutomaticPhotoDownloadPrivateChats">Private Chats</string>
     <string name="Events">EVENTS</string>
-    <string name="AddForwardingInfo">Add Forwarding Info</string>
     <string name="InvisibleStatus">Invisible status</string>
     <string name="ContactJoined">Contact joined Telegram</string>
     <string name="Pebble">PEBBLE</string>
@@ -298,6 +297,7 @@
     <string name="Copy">Copy</string>
     <string name="Delete">Delete</string>
     <string name="Forward">Forward</string>
+    <string name="QuoteForward">Quote and Forward</string>
     <string name="Retry">Retry</string>
     <string name="FromCamera">From camera</string>
     <string name="FromGalley">From gallery</string>
