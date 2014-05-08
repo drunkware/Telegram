@@ -298,6 +298,7 @@
     <string name="Delete">Delete</string>
     <string name="Forward">Forward</string>
     <string name="QuoteForward">Quote and Forward</string>
+    <string name="Share">Share</string>
     <string name="Retry">Retry</string>
     <string name="FromCamera">From camera</string>
     <string name="FromGalley">From gallery</string>

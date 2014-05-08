@@ -1740,8 +1740,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
     }
 
     private void sendMessage(String message, double lat, double lon, TLRPC.TL_photo photo, TLRPC.TL_video video, MessageObject msgObj, TLRPC.FileLocation location, TLRPC.User user, TLRPC.TL_document document, TLRPC.TL_audio audio, long peer) {
-// FAD Code starts ---------------------------------------
-        // If a message came as an object change it back as normal
+        // If a message came as an object and we are not quoting it then change it back as normal
         if (msgObj != null && !QuoteForward) {
             if (msgObj.messageOwner.media.photo != null) {
                 photo = (TLRPC.TL_photo) msgObj.messageOwner.media.photo;
@@ -1753,7 +1752,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 if (msgObj.messageOwner.attachPath != null && msgObj.messageOwner.attachPath.length() != 0) {
                     video.path = msgObj.messageOwner.attachPath;
                 } else {
-                    video.path = Utilities.getCacheDir() + "/" + msgObj.getFileName();
+                    video.path = Utilities.getCacheDir().toString() + File.separator + msgObj.getFileName();
                 }
                 Bitmap thumb = ThumbnailUtils.createVideoThumbnail(video.path, MediaStore.Video.Thumbnails.MINI_KIND);
                 video.thumb = FileLoader.scaleAndSaveImage(thumb, 90, 90, 55, false);
@@ -1779,7 +1778,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 if (msgObj.messageOwner.attachPath != null && msgObj.messageOwner.attachPath.length() != 0) {
                     document.path = msgObj.messageOwner.attachPath;
                 } else {
-                    document.path = Utilities.getCacheDir() + "/" + msgObj.getFileName();
+                    document.path = Utilities.getCacheDir().toString() + File.separator + msgObj.getFileName();
                 }
                 File f = new File(document.path);
                 if (!f.exists() || f.length() == 0) {
@@ -1799,12 +1798,12 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 if (msgObj.messageOwner.attachPath != null && msgObj.messageOwner.attachPath.length() != 0) {
                     audio.path = msgObj.messageOwner.attachPath;
                 } else {
-                    audio.path = Utilities.getCacheDir() + "/" + msgObj.getFileName();
+                    audio.path = Utilities.getCacheDir().toString() + File.separator + msgObj.getFileName();
                 }
 
                 File f = new File(audio.path);
                 if (!f.exists() || f.length() == 0) {
-                    audio.path = Utilities.getCacheDir() + "/1_" + audio.id + ".m4a";
+                    audio.path = Utilities.getCacheDir().toString() + File.separator + "1_" + audio.id + ".m4a";
                 }
                 audio.date = ConnectionsManager.getInstance().getCurrentTime();
             } else if (msgObj.messageOwner.message != null) {
@@ -1813,7 +1812,6 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 // TODO: Unknown type, let it continue unchanged [ Maybe show an error to update the code! ]
             }
         }
-// FAD Changes ends ---------------------------------------
         TLRPC.Message newMsg = null;
         int type = -1;
         if (message != null) {

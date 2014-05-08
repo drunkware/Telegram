@@ -3028,7 +3028,7 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
                         items = new CharSequence[] {LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Copy", R.string.Copy), LocaleController.getString("Delete", R.string.Delete)};
                     } else if (type == 4) {
                         items = new CharSequence[] {LocaleController.getString(selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaDocument ? "SaveToDownloads" : "SaveToGallery",
-                                selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaDocument ? R.string.SaveToDownloads : R.string.SaveToGallery), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
+                                selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaDocument ? R.string.SaveToDownloads : R.string.SaveToGallery), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Share", R.string.Share), LocaleController.getString("Delete", R.string.Delete)};
                     } else if (type == 5) {
                         items = new CharSequence[] {LocaleController.getString("ApplyLocalizationFile", R.string.ApplyLocalizationFile), LocaleController.getString("SaveToDownloads", R.string.SaveToDownloads), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
                     }
@@ -3105,7 +3105,9 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
                                     processSelectedOption(2);
                                 } else if (i == 2) {            // Forward (without forwarded from tag)
                                     processSelectedOption(4);
-                                } else if (i == 3) {            // Delete
+                                } else if (i == 3) {            // Share
+                                    processSelectedOption(5);
+                                } else if (i == 4) {            // Delete
                                     processSelectedOption(1);
                                 }
                             } else {
@@ -3290,6 +3292,50 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
                     android.content.ClipData clip = android.content.ClipData.newPlainText("label", selectedObject.messageText);
                     clipboard.setPrimaryClip(clip);
                 }
+                selectedObject = null;
+            }
+        } else if (option == 5) {
+            if (selectedObject != null) {
+
+                String ObjectPath = "";
+                String MimeType = "";
+
+                if (selectedObject.messageOwner.attachPath != null && selectedObject.messageOwner.attachPath.length() != 0) {
+                    ObjectPath = selectedObject.messageOwner.attachPath;
+                }
+
+                File f = new File(ObjectPath);
+                if (!f.exists() || f.length() == 0) {
+                    ObjectPath = Utilities.getCacheDir().toString() + File.separator + selectedObject.getFileName();
+                }
+
+                if (ObjectPath == null) {
+                    // TODO: Error path not found!
+                    return;
+                }
+
+                String fileExt = MimeTypeMap.getFileExtensionFromUrl(ObjectPath);
+                if (fileExt != null) {
+                    MimeTypeMap mime = MimeTypeMap.getSingleton();
+                    MimeType = mime.getMimeTypeFromExtension(fileExt);
+                }
+                if (MimeType == null) {
+                    if (selectedObject.type == 3) {             // Video
+                        MimeType = "video/mp4";
+                    } else if (selectedObject.type == 8 || selectedObject.type == 9) {  // Document
+                        MimeType = "message/rfc822";
+                    } else if (selectedObject.type == 1) {      // Photo
+                        MimeType = "image/jpeg";
+                    } else {
+                        return;
+                    }
+                }
+
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(ObjectPath)));
+                shareIntent.setType(MimeType);
+                startActivity(Intent.createChooser(shareIntent, "Share with"));
                 selectedObject = null;
             }
         }

@@ -298,6 +298,7 @@
     <string name="Delete">حذف</string>
     <string name="Forward">إعادة توجيه</string>
     <string name="QuoteForward">إعادة توجيه باقتباس</string>
+    <string name="Share">مشاركة</string>
     <string name="Retry">إعادة المحاولة</string>
     <string name="FromCamera">من الكاميرا</string>
     <string name="FromGalley">من الجهاز</string>
