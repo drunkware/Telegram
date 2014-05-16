@@ -102,7 +102,7 @@ public class EmojiView extends LinearLayout {
         setOrientation(1);
         for (int i = 0; ; i++) {
             if (i >= Emoji.data.length) {
-                setBackgroundDrawable(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[] { -14145496, -16777216 }));
+                setBackgroundDrawable(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, new int[] { 0xFF606060, 0xFFD0D0D0 }));
                 pager = new ViewPager(getContext());
                 pager.setAdapter(new EmojiPagesAdapter());
                 PagerSlidingTabStrip tabs = new PagerSlidingTabStrip(getContext());
