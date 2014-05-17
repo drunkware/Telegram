@@ -69,6 +69,8 @@ public class MessageObject {
             textPaint.linkColor = 0xff316f9f;
         }
 
+        textPaint.setTextSize(Utilities.dp(MessagesController.getInstance().fontSize));
+
         messageOwner = message;
 
         if (message instanceof TLRPC.TL_messageService) {
@@ -280,8 +282,9 @@ public class MessageObject {
             messageText = messageText.toString().replaceAll("\\*(.+?)\\*", "<font color='blue'>$1</font>");
             messageText = messageText.toString().replace("\n", "<br>");     // Change new line to something that Html will understand
             messageText = Html.fromHtml(messageText.toString());
-            messageText = Emoji.replaceEmoji(messageText);
+            messageText = Emoji.replaceEmoji(messageText, textPaint.getFontMetricsInt(), Utilities.dp(20));
         }
+        
 
         if (message instanceof TLRPC.TL_message || (message instanceof TLRPC.TL_messageForwarded && (message.media == null || !(message.media instanceof TLRPC.TL_messageMediaEmpty)))) {
             if (message.media == null || message.media instanceof TLRPC.TL_messageMediaEmpty) {
@@ -413,8 +416,6 @@ public class MessageObject {
                 Linkify.addLinks((Spannable)messageText, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES | Linkify.PHONE_NUMBERS);
             }
         }
-
-        textPaint.setTextSize(Utilities.dp(MessagesController.getInstance().fontSize));
 
         int maxWidth;
         if (messageOwner.to_id.chat_id != 0) {

@@ -259,13 +259,7 @@ public class ApplicationLoader extends Application {
                 }
                 return false;
             }
-        };
-        if(Build.VERSION.SDK_INT < 11) {
-            task.execute(null, null, null);
-        }
-        else{
-            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, null, null, null);
-        }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, null, null, null);
     }
 
     private void sendRegistrationIdToBackend(final boolean isNew) {
