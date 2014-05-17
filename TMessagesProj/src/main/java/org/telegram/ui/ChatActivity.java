@@ -1662,7 +1662,7 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
     }
 
     public boolean processSendingText(String text) {
-        text = getTrimmedString(text);
+//        text = getTrimmedString(text);
         if (text.length() != 0) {
             int count = (int)Math.ceil(text.length() / 4096.0f);
             for (int a = 0; a < count; a++) {
