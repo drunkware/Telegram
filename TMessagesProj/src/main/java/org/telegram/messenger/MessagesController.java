@@ -62,6 +62,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
     public SparseArray<MessageObject> dialogMessage = new SparseArray<MessageObject>();
     public ConcurrentHashMap<Long, ArrayList<PrintingUser>> printingUsers = new ConcurrentHashMap<Long, ArrayList<PrintingUser>>(100, 1.0f, 2);
     public HashMap<Long, CharSequence> printingStrings = new HashMap<Long, CharSequence>();
+    private int lastPrintingStringCount = 0;
 
     private HashMap<String, ArrayList<DelayedMessage>> delayedMessages = new HashMap<String, ArrayList<DelayedMessage>>();
     public SparseArray<MessageObject> sendingMessages = new SparseArray<MessageObject>();
@@ -96,7 +97,6 @@ public class MessagesController implements NotificationCenter.NotificationCenter
     private int sound;
     public boolean enableJoined = true;
     public int fontSize = Utilities.dp(16);
-    public long scheduleContactsReload = 0;
 
     public MessageObject currentPushMessage;
 
@@ -295,6 +295,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
         printingUsers.clear();
         printingStrings.clear();
         totalDialogsCount = 0;
+        lastPrintingStringCount = 0;
         hidenAddToContacts.clear();
         updatesQueue.clear();
         pendingEncMessagesToDelete.clear();
@@ -302,7 +303,6 @@ public class MessagesController implements NotificationCenter.NotificationCenter
 
         updatesStartWaitTime = 0;
         currentDeletingTaskTime = 0;
-        scheduleContactsReload = 0;
         currentDeletingTaskMids = null;
         gettingNewDeleteTask = false;
         currentDeletingTask = null;
@@ -765,11 +765,6 @@ public class MessagesController implements NotificationCenter.NotificationCenter
         checkDeletingTask();
 
         if (UserConfig.clientUserId != 0) {
-            if (scheduleContactsReload != 0 && currentTime > scheduleContactsReload) {
-                ContactsController.getInstance().performSyncPhoneBook(ContactsController.getInstance().getContactsCopy(ContactsController.getInstance().contactsBook), true, false, true);
-                scheduleContactsReload = 0;
-            }
-
             if (ApplicationLoader.lastPauseTime == 0) {
                 if (statusSettingState != 1 && (lastStatusUpdateTime == 0 || lastStatusUpdateTime <= System.currentTimeMillis() - 55000 || offlineSent)) {
                     statusSettingState = 1;
@@ -827,10 +822,8 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 FileLog.e("tmessages", "UPDATES WAIT TIMEOUT - CHECK QUEUE");
                 processUpdatesQueue(false);
             }
-        } else {
-            scheduleContactsReload = 0;
         }
-        if (!printingUsers.isEmpty()) {
+        if (!printingUsers.isEmpty() || lastPrintingStringCount != printingUsers.size()) {
             boolean updated = false;
             ArrayList<Long> keys = new ArrayList<Long>(printingUsers.keySet());
             for (int b = 0; b < keys.size(); b++) {
@@ -901,6 +894,8 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 }
             }
         }
+
+        lastPrintingStringCount = newPrintingStrings.size();
 
         Utilities.RunOnUIThread(new Runnable() {
             @Override
@@ -3748,7 +3743,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
         final ArrayList<Integer> markAsReadMessages = new ArrayList<Integer>();
         final HashMap<Integer, Integer> markAsReadEncrypted = new HashMap<Integer, Integer>();
         final ArrayList<Integer> deletedMessages = new ArrayList<Integer>();
-        final ArrayList<Long> printChanges = new ArrayList<Long>();
+        boolean printChanged = false;
         final ArrayList<TLRPC.ChatParticipants> chatInfoToUpdate = new ArrayList<TLRPC.ChatParticipants>();
         final ArrayList<TLRPC.Update> updatesOnMainThread = new ArrayList<TLRPC.Update>();
         final ArrayList<TLRPC.TL_updateEncryptedMessagesRead> tasks = new ArrayList<TLRPC.TL_updateEncryptedMessagesRead>();
@@ -3870,9 +3865,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                         newUser.userId = update.user_id;
                         newUser.lastTime = currentTime;
                         arr.add(newUser);
-                        if (!printChanges.contains(uid)) {
-                            printChanges.add(uid);
-                        }
+                        printChanged = true;
                     }
                 }
             } else if (update instanceof TLRPC.TL_updateChatParticipants) {
@@ -4040,9 +4033,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     newUser.userId = update.user_id;
                     newUser.lastTime = currentTime;
                     arr.add(newUser);
-                    if (!printChanges.contains(uid)) {
-                        printChanges.add(uid);
-                    }
+                    printChanged = true;
                 }
             } else if (update instanceof TLRPC.TL_updateEncryptedMessagesRead) {
                 markAsReadEncrypted.put(update.chat_id, Math.max(update.max_date, update.date));
@@ -4148,19 +4139,19 @@ public class MessagesController implements NotificationCenter.NotificationCenter
             for (HashMap.Entry<Long, ArrayList<MessageObject>> pair : messages.entrySet()) {
                 Long key = pair.getKey();
                 ArrayList<MessageObject> value = pair.getValue();
-                boolean printChanged = updatePrintingUsersWithNewMessages(key, value);
-                if (printChanged && !printChanges.contains(key)) {
-                    printChanges.add(key);
+                if (updatePrintingUsersWithNewMessages(key, value)) {
+                    printChanged = true;
                 }
             }
         }
 
-        if (!printChanges.isEmpty()) {
+        if (printChanged) {
             updatePrintingStrings();
         }
 
         final MessageObject lastMessageArg = lastMessage;
         final int interfaceUpdateMaskFinal = interfaceUpdateMask;
+        final boolean printChangedArg = printChanged;
 
         processPendingEncMessages();
 
@@ -4172,7 +4163,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
             MessagesStorage.getInstance().putMessages(messagesArr, true, true);
         }
 
-        if (!messages.isEmpty() || !markAsReadMessages.isEmpty() || !deletedMessages.isEmpty() || !printChanges.isEmpty() || !chatInfoToUpdate.isEmpty() || !updatesOnMainThread.isEmpty() || !markAsReadEncrypted.isEmpty() || !contactsIds.isEmpty()) {
+        if (!messages.isEmpty() || !markAsReadMessages.isEmpty() || !deletedMessages.isEmpty() || printChanged || !chatInfoToUpdate.isEmpty() || !updatesOnMainThread.isEmpty() || !markAsReadEncrypted.isEmpty() || !contactsIds.isEmpty()) {
             Utilities.RunOnUIThread(new Runnable() {
                 @Override
                 public void run() {
@@ -4260,7 +4251,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                             }
                         }
                     }
-                    if (!printChanges.isEmpty()) {
+                    if (printChangedArg) {
                         updateMask |= UPDATE_MASK_USER_PRINT;
                     }
                     if (!contactsIds.isEmpty()) {
@@ -4589,15 +4580,18 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 needVibrate = false;
             }
 
+            String name = Utilities.formatName(user.first_name, user.last_name);
+            String msgShort = msg.replace(name + ": ", "").replace(name + " ", "");
+
             intent.setAction("com.tmessages.openchat" + Math.random() + Integer.MAX_VALUE);
             intent.setFlags(32768);
             PendingIntent contentIntent = PendingIntent.getActivity(ApplicationLoader.applicationContext, 0, intent, PendingIntent.FLAG_ONE_SHOT);
 
             NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(ApplicationLoader.applicationContext)
-                    .setContentTitle(LocaleController.getString("AppName", R.string.AppName))
+                    .setContentTitle(name)
                     .setSmallIcon(R.drawable.notification)
-                    .setStyle(new NotificationCompat.BigTextStyle().bigText(msg))
-                    .setContentText(msg)
+                    .setStyle(new NotificationCompat.BigTextStyle().bigText(msgShort))
+                    .setContentText(msgShort)
                     .setAutoCancel(true)
                     .setTicker(msg);
 

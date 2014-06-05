@@ -20,6 +20,7 @@ import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
 import android.view.View;
 
+import org.telegram.messenger.ConnectionsManager;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.MediaController;
 import org.telegram.messenger.MessagesController;
@@ -58,7 +59,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
     private String currentPhotoFilter;
     private ImageReceiver photoImage;
     private ProgressView progressView;
-    public boolean downloadPhotos = true;
+    public int downloadPhotos = 0;
     private boolean progressVisible = false;
 
     private int TAG;
@@ -380,12 +381,22 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                     }
                 }
 
-                currentPhotoObject = PhotoObject.getClosestImageWithSize(messageObject.photoThumbs, photoWidth, photoHeight);
+                currentPhotoObject = PhotoObject.getClosestImageWithSize(messageObject.photoThumbs, 800, 800);
                 if (currentPhotoObject != null) {
                     float scale = (float) currentPhotoObject.photoOwner.w / (float) photoWidth;
 
                     int w = (int) (currentPhotoObject.photoOwner.w / scale);
                     int h = (int) (currentPhotoObject.photoOwner.h / scale);
+                    if (w == 0) {
+                        if (messageObject.type == 3) {
+                            w = infoWidth + infoOffset + Utilities.dp(16);
+                        } else {
+                            w = Utilities.dp(100);
+                        }
+                    }
+                    if (h == 0) {
+                        h = Utilities.dp(100);
+                    }
                     if (h > photoHeight) {
                         float scale2 = h;
                         h = photoHeight;
@@ -417,7 +428,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                                 MediaController.getInstance().removeLoadingFileObserver(this);
                             }
                         }
-                        if (photoExist || downloadPhotos) {
+                        if (photoExist || downloadPhotos == 0 || downloadPhotos == 2 && ConnectionsManager.isConnectedToWiFi()) {
                             if (messageObject.imagePreview != null) {
                                 photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, new BitmapDrawable(messageObject.imagePreview), currentPhotoObject.photoOwner.size);
                             } else {
@@ -488,7 +499,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             if (!cacheFile.exists()) {
                 MediaController.getInstance().addLoadingFileObserver(fileName, this);
                 if (!FileLoader.getInstance().isLoadingFile(fileName)) {
-                    if (currentMessageObject.type != 1 || !downloadPhotos) {
+                    if (currentMessageObject.type != 1 || downloadPhotos == 1 || downloadPhotos == 2 && !ConnectionsManager.isConnectedToWiFi()) {
                         buttonState = 0;
                         progressVisible = false;
                     } else {
@@ -497,7 +508,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                     }
                     progressView.setProgress(0);
                 } else {
-                    if (currentMessageObject.type != 1 || !downloadPhotos) {
+                    if (currentMessageObject.type != 1 || downloadPhotos == 1 || downloadPhotos == 2 && !ConnectionsManager.isConnectedToWiFi()) {
                         buttonState = 1;
                     } else {
                         buttonState = -1;
