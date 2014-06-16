@@ -543,7 +543,12 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
                         }
                         MessagesController.getInstance().deleteMessages(ids, random_ids, currentEncryptedChat);
                         actionBarLayer.hideActionMode();
-                    } else if (id == forward) {
+                    } else if (id == forward || id == quoteforward) {
+                        if (id == quoteforward) {
+                            MessagesController.QuoteForward = true;
+                        } else {
+                            MessagesController.QuoteForward = false;
+                        }
                         Bundle args = new Bundle();
                         args.putBoolean("onlySelect", true);
                         args.putBoolean("serverOnly", true);
@@ -606,14 +611,16 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
             selectedMessagesCountTextView.setLayoutParams(layoutParams);
 
             if (currentEncryptedChat == null) {
-                actionMode.addItem(copy, R.drawable.ic_ab_fwd_copy);
+                actionMode.addItem(quoteforward, R.drawable.ic_ab_fwd_quoteforward);
                 actionMode.addItem(forward, R.drawable.ic_ab_fwd_forward);
+                actionMode.addItem(copy, R.drawable.ic_ab_fwd_copy);
                 actionMode.addItem(delete, R.drawable.ic_ab_fwd_delete);
             } else {
                 actionMode.addItem(copy, R.drawable.ic_ab_fwd_copy);
                 actionMode.addItem(delete, R.drawable.ic_ab_fwd_delete);
             }
             actionMode.getItem(copy).setVisibility(selectedMessagesCanCopyIds.size() != 0 ? View.VISIBLE : View.GONE);
+    //TODO:        actionMode.getItem(quoteforward).setVisibility([is object downloaded] ? View.VISIBLE : View.GONE);
 
             View avatarLayout = menu.addItemResource(chat_menu_avatar, R.layout.chat_header_layout);
             avatarImageView = (BackupImageView)avatarLayout.findViewById(R.id.chat_avatar_image);
@@ -3222,7 +3229,7 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
                 }
                 selectedObject = null;
             }
-/*        } else if (option == 5) {
+        } else if (option == 5) {
             if (selectedObject != null) {
 
                 String ObjectPath = "";
@@ -3263,9 +3270,9 @@ public class ChatActivity extends BaseFragment implements SizeNotifierRelativeLa
                 shareIntent.setAction(Intent.ACTION_SEND);
                 shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(ObjectPath)));
                 shareIntent.setType(MimeType);
-                startActivity(Intent.createChooser(shareIntent, "Share with"));
+                getParentActivity().startActivity(Intent.createChooser(shareIntent, "Share with"));
                 selectedObject = null;
-            } */
+            }
         }
     }
 

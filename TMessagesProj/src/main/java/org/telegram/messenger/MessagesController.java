@@ -1767,7 +1767,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 document.thumb = new TLRPC.TL_photoSizeEmpty();
                 document.thumb.type = "s";
                 document.id = 0;
-                document.user_id = UserConfig.clientUserId;
+                document.user_id = UserConfig.getClientUserId();
                 document.date = ConnectionsManager.getInstance().getCurrentTime();
                 document.dc_id = 0;
                 document.access_hash = 0;
