@@ -220,7 +220,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
             return null;
         }
         TLRPC.InputUser inputUser = null;
-        if (user.id == UserConfig.clientUserId) {
+        if (user.id == UserConfig.getClientUserId()) {
             inputUser = new TLRPC.TL_inputUserSelf();
         } else if (user instanceof TLRPC.TL_userForeign || user instanceof TLRPC.TL_userRequest) {
             inputUser = new TLRPC.TL_inputUserForeign();
@@ -253,7 +253,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 if (obj.messageOwner.to_id.chat_id != 0) {
                     uid = -obj.messageOwner.to_id.chat_id;
                 } else {
-                    if (obj.messageOwner.to_id.user_id == UserConfig.clientUserId) {
+                    if (obj.messageOwner.to_id.user_id == UserConfig.getClientUserId()) {
                         obj.messageOwner.to_id.user_id = obj.messageOwner.from_id;
                     }
                     uid = obj.messageOwner.to_id.user_id;
@@ -471,8 +471,8 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                             users.putIfAbsent(user.id, user);
                         } else {
                             users.put(user.id, user);
-                            if (user.id == UserConfig.clientUserId) {
-                                UserConfig.currentUser = user;
+                            if (user.id == UserConfig.getClientUserId()) {
+                                UserConfig.setCurrentUser(user);
                             }
                         }
                     }
@@ -726,8 +726,8 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                         public void run() {
                             for (TLRPC.User user : res.users) {
                                 users.put(user.id, user);
-                                if (user.id == UserConfig.clientUserId) {
-                                    UserConfig.currentUser = user;
+                                if (user.id == UserConfig.getClientUserId()) {
+                                    UserConfig.setCurrentUser(user);
                                 }
                             }
                             for (TLRPC.Chat chat : res.chats) {
@@ -747,8 +747,8 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                             users.putIfAbsent(user.id, user);
                         } else {
                             users.put(user.id, user);
-                            if (user.id == UserConfig.clientUserId) {
-                                UserConfig.currentUser = user;
+                            if (user.id == UserConfig.getClientUserId()) {
+                                UserConfig.setCurrentUser(user);
                             }
                         }
                     }
@@ -763,7 +763,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
 
         checkDeletingTask();
 
-        if (UserConfig.clientUserId != 0) {
+        if (UserConfig.isClientActivated()) {
             if (ApplicationLoader.lastPauseTime == 0) {
                 if (statusSettingState != 1 && (lastStatusUpdateTime == 0 || lastStatusUpdateTime <= System.currentTimeMillis() - 55000 || offlineSent)) {
                     statusSettingState = 1;
@@ -1024,15 +1024,15 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     public void run() {
                         for (TLRPC.User u : messagesRes.users) {
                             if (isCache) {
-                                if (u.id == UserConfig.clientUserId || u.id / 1000 == 333) {
+                                if (u.id == UserConfig.getClientUserId() || u.id / 1000 == 333) {
                                     users.put(u.id, u);
                                 } else {
                                     users.putIfAbsent(u.id, u);
                                 }
                             } else {
                                 users.put(u.id, u);
-                                if (u.id == UserConfig.clientUserId) {
-                                    UserConfig.currentUser = u;
+                                if (u.id == UserConfig.getClientUserId()) {
+                                    UserConfig.setCurrentUser(u);
                                 }
                             }
                         }
@@ -1197,15 +1197,15 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                         public void run() {
                             for (TLRPC.User u : dialogsRes.users) {
                                 if (isCache) {
-                                    if (u.id == UserConfig.clientUserId || u.id / 1000 == 333) {
+                                    if (u.id == UserConfig.getClientUserId() || u.id / 1000 == 333) {
                                         users.put(u.id, u);
                                     } else {
                                         users.putIfAbsent(u.id, u);
                                     }
                                 } else {
                                     users.put(u.id, u);
-                                    if (u.id == UserConfig.clientUserId) {
-                                        UserConfig.currentUser = u;
+                                    if (u.id == UserConfig.getClientUserId()) {
+                                        UserConfig.setCurrentUser(u);
                                     }
                                 }
                             }
@@ -1265,15 +1265,15 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     public void run() {
                         for (TLRPC.User u : dialogsRes.users) {
                             if (isCache) {
-                                if (u.id == UserConfig.clientUserId || u.id / 1000 == 333) {
+                                if (u.id == UserConfig.getClientUserId() || u.id / 1000 == 333) {
                                     users.put(u.id, u);
                                 } else {
                                     users.putIfAbsent(u.id, u);
                                 }
                             } else {
                                 users.put(u.id, u);
-                                if (u.id == UserConfig.clientUserId) {
-                                    UserConfig.currentUser = u;
+                                if (u.id == UserConfig.getClientUserId()) {
+                                    UserConfig.setCurrentUser(u);
                                 }
                             }
                         }
@@ -1378,7 +1378,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
         } else {
             UserConfig.saveConfig(false);
             TLRPC.TL_photo photo = new TLRPC.TL_photo();
-            photo.user_id = UserConfig.clientUserId;
+            photo.user_id = UserConfig.getClientUserId();
             photo.date = ConnectionsManager.getInstance().getCurrentTime();
             photo.sizes = sizes;
             photo.caption = "";
@@ -1634,11 +1634,11 @@ public class MessagesController implements NotificationCenter.NotificationCenter
         newMsg.action = new TLRPC.TL_messageActionTTLChange();
         newMsg.action.ttl = encryptedChat.ttl;
         newMsg.local_id = newMsg.id = UserConfig.getNewMessageId();
-        newMsg.from_id = UserConfig.clientUserId;
+        newMsg.from_id = UserConfig.getClientUserId();
         newMsg.unread = true;
         newMsg.dialog_id = ((long)encryptedChat.id) << 32;
         newMsg.to_id = new TLRPC.TL_peerUser();
-        if (encryptedChat.participant_id == UserConfig.clientUserId) {
+        if (encryptedChat.participant_id == UserConfig.getClientUserId()) {
             newMsg.to_id.user_id = encryptedChat.admin_id;
         } else {
             newMsg.to_id.user_id = encryptedChat.participant_id;
@@ -1683,11 +1683,11 @@ public class MessagesController implements NotificationCenter.NotificationCenter
         newMsg.action.encryptedAction = action;
 
         newMsg.local_id = newMsg.id = UserConfig.getNewMessageId();
-        newMsg.from_id = UserConfig.clientUserId;
+        newMsg.from_id = UserConfig.getClientUserId();
         newMsg.unread = true;
         newMsg.dialog_id = ((long)encryptedChat.id) << 32;
         newMsg.to_id = new TLRPC.TL_peerUser();
-        if (encryptedChat.participant_id == UserConfig.clientUserId) {
+        if (encryptedChat.participant_id == UserConfig.getClientUserId()) {
             newMsg.to_id.user_id = encryptedChat.admin_id;
         } else {
             newMsg.to_id.user_id = encryptedChat.participant_id;
@@ -1877,7 +1877,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
             return;
         }
         newMsg.local_id = newMsg.id = UserConfig.getNewMessageId();
-        newMsg.from_id = UserConfig.clientUserId;
+        newMsg.from_id = UserConfig.getClientUserId();
         newMsg.unread = true;
         newMsg.dialog_id = peer;
         int lower_id = (int)peer;
@@ -1909,7 +1909,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
         } else {
             encryptedChat = encryptedChats.get((int)(peer >> 32));
             newMsg.to_id = new TLRPC.TL_peerUser();
-            if (encryptedChat.participant_id == UserConfig.clientUserId) {
+            if (encryptedChat.participant_id == UserConfig.getClientUserId()) {
                 newMsg.to_id.user_id = encryptedChat.admin_id;
             } else {
                 newMsg.to_id.user_id = encryptedChat.participant_id;
@@ -2641,12 +2641,12 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 @Override
                 public void run(TLObject response, TLRPC.TL_error error) {
                     if (error == null) {
-                        TLRPC.User user = users.get(UserConfig.clientUserId);
+                        TLRPC.User user = users.get(UserConfig.getClientUserId());
                         if (user == null) {
-                            user = UserConfig.currentUser;
+                            user = UserConfig.getCurrentUser();
                             users.put(user.id, user);
                         } else {
-                            UserConfig.currentUser = user;
+                            UserConfig.setCurrentUser(user);
                         }
                         if (user == null) {
                             return;
@@ -2758,8 +2758,8 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     public void run() {
                         for (TLRPC.User user : res.users) {
                             users.put(user.id, user);
-                            if (user.id == UserConfig.clientUserId) {
-                                UserConfig.currentUser = user;
+                            if (user.id == UserConfig.getClientUserId()) {
+                                UserConfig.setCurrentUser(user);
                             }
                         }
                         for (TLRPC.Chat chat : res.chats) {
@@ -2827,8 +2827,8 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     public void run() {
                         for (TLRPC.User user : res.users) {
                             users.put(user.id, user);
-                            if (user.id == UserConfig.clientUserId) {
-                                UserConfig.currentUser = user;
+                            if (user.id == UserConfig.getClientUserId()) {
+                                UserConfig.setCurrentUser(user);
                             }
                         }
                         for (TLRPC.Chat chat : res.chats) {
@@ -2850,7 +2850,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                             }
                             TLRPC.TL_chatParticipant newPart = new TLRPC.TL_chatParticipant();
                             newPart.user_id = user.id;
-                            newPart.inviter_id = UserConfig.clientUserId;
+                            newPart.inviter_id = UserConfig.getClientUserId();
                             newPart.date = ConnectionsManager.getInstance().getCurrentTime();
                             info.participants.add(0, newPart);
                             MessagesStorage.getInstance().updateChatInfo(info.chat_id, info, true);
@@ -2905,14 +2905,14 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     public void run() {
                         for (TLRPC.User user : res.users) {
                             users.put(user.id, user);
-                            if (user.id == UserConfig.clientUserId) {
-                                UserConfig.currentUser = user;
+                            if (user.id == UserConfig.getClientUserId()) {
+                                UserConfig.setCurrentUser(user);
                             }
                         }
                         for (TLRPC.Chat chat : res.chats) {
                             chats.put(chat.id, chat);
                         }
-                        if (user.id != UserConfig.clientUserId) {
+                        if (user.id != UserConfig.getClientUserId()) {
                             final ArrayList<MessageObject> messagesObj = new ArrayList<MessageObject>();
                             messagesObj.add(new MessageObject(res.message, users));
                             TLRPC.Chat chat = res.chats.get(0);
@@ -2939,7 +2939,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     }
                 });
 
-                if (user.id != UserConfig.clientUserId) {
+                if (user.id != UserConfig.getClientUserId()) {
                     final ArrayList<TLRPC.Message> messages = new ArrayList<TLRPC.Message>();
                     messages.add(res.message);
                     MessagesStorage.getInstance().putMessages(messages, true, true);
@@ -2984,8 +2984,8 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     public void run() {
                         for (TLRPC.User user : res.users) {
                             users.put(user.id, user);
-                            if (user.id == UserConfig.clientUserId) {
-                                UserConfig.currentUser = user;
+                            if (user.id == UserConfig.getClientUserId()) {
+                                UserConfig.setCurrentUser(user);
                             }
                         }
                         for (TLRPC.Chat chat : res.chats) {
@@ -3050,8 +3050,8 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     public void run() {
                         for (TLRPC.User user : res.users) {
                             users.put(user.id, user);
-                            if (user.id == UserConfig.clientUserId) {
-                                UserConfig.currentUser = user;
+                            if (user.id == UserConfig.getClientUserId()) {
+                                UserConfig.setCurrentUser(user);
                             }
                         }
                         for (TLRPC.Chat chat : res.chats) {
@@ -3104,9 +3104,11 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 }
             }, null, true, RPCRequest.RPCRequestClassGeneric);
         }
+    }
 
-        TLRPC.TL_auth_logOut req2 = new TLRPC.TL_auth_logOut();
-        ConnectionsManager.getInstance().performRpc(req2, new RPCRequest.RPCRequestDelegate() {
+    public void logOut() {
+        TLRPC.TL_auth_logOut req = new TLRPC.TL_auth_logOut();
+        ConnectionsManager.getInstance().performRpc(req, new RPCRequest.RPCRequestDelegate() {
             @Override
             public void run(TLObject response, TLRPC.TL_error error) {
 
@@ -3115,7 +3117,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
     }
 
     public void registerForPush(final String regid) {
-        if (regid == null || regid.length() == 0 || registeringForPush || UserConfig.clientUserId == 0) {
+        if (regid == null || regid.length() == 0 || registeringForPush || UserConfig.getClientUserId() == 0) {
             return;
         }
         if (UserConfig.registeredForPush && regid.equals(UserConfig.pushString)) {
@@ -3347,8 +3349,8 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                         public void run() {
                             for (TLRPC.User user : res.users) {
                                 users.put(user.id, user);
-                                if (user.id == UserConfig.clientUserId) {
-                                    UserConfig.currentUser = user;
+                                if (user.id == UserConfig.getClientUserId()) {
+                                    UserConfig.setCurrentUser(user);
                                 }
                             }
                             for (TLRPC.Chat chat : res.chats) {
@@ -3429,7 +3431,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                                                 if (message.to_id.chat_id != 0) {
                                                     uid = -message.to_id.chat_id;
                                                 } else {
-                                                    if (message.to_id.user_id == UserConfig.clientUserId) {
+                                                    if (message.to_id.user_id == UserConfig.getClientUserId()) {
                                                         message.to_id.user_id = message.from_id;
                                                     }
                                                     uid = message.to_id.user_id;
@@ -3557,7 +3559,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                             if (printUpdate) {
                                 NotificationCenter.getInstance().postNotificationName(updateInterfaces, UPDATE_MASK_USER_PRINT);
                             }
-                            if (obj.messageOwner.from_id != UserConfig.clientUserId) {
+                            if (obj.messageOwner.from_id != UserConfig.getClientUserId()) {
                                 long dialog_id;
                                 if (obj.messageOwner.to_id.chat_id != 0) {
                                     dialog_id = -obj.messageOwner.to_id.chat_id;
@@ -3620,7 +3622,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                             if (printUpdate) {
                                 NotificationCenter.getInstance().postNotificationName(updateInterfaces, UPDATE_MASK_USER_PRINT);
                             }
-                            if (obj.messageOwner.from_id != UserConfig.clientUserId) {
+                            if (obj.messageOwner.from_id != UserConfig.getClientUserId()) {
                                 long dialog_id;
                                 if (obj.messageOwner.to_id.chat_id != 0) {
                                     dialog_id = -obj.messageOwner.to_id.chat_id;
@@ -3783,8 +3785,8 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     if (usersArr != null) {
                         for (TLRPC.User user : usersArr) {
                             users.put(user.id, user);
-                            if (user.id == UserConfig.clientUserId) {
-                                UserConfig.currentUser = user;
+                            if (user.id == UserConfig.getClientUserId()) {
+                                UserConfig.setCurrentUser(user);
                             }
                         }
                     }
@@ -3818,7 +3820,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 if (upd.message.to_id.chat_id != 0) {
                     uid = -upd.message.to_id.chat_id;
                 } else {
-                    if (upd.message.to_id.user_id == UserConfig.clientUserId) {
+                    if (upd.message.to_id.user_id == UserConfig.getClientUserId()) {
                         upd.message.to_id.user_id = upd.message.from_id;
                     }
                     uid = upd.message.to_id.user_id;
@@ -3830,7 +3832,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 }
                 arr.add(obj);
                 MessagesStorage.lastPtsValue = update.pts;
-                if (upd.message.from_id != UserConfig.clientUserId && upd.message.to_id != null) {
+                if (upd.message.from_id != UserConfig.getClientUserId() && upd.message.to_id != null) {
                     if (uid != openned_dialog_id || ApplicationLoader.lastPauseTime != 0) {
                         lastMessage = obj;
                     }
@@ -3846,7 +3848,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
             } else if (update instanceof TLRPC.TL_updateRestoreMessages) {
                 MessagesStorage.lastPtsValue = update.pts;
             } else if (update instanceof TLRPC.TL_updateUserTyping || update instanceof TLRPC.TL_updateChatUserTyping) {
-                if (update.user_id != UserConfig.clientUserId) {
+                if (update.user_id != UserConfig.getClientUserId()) {
                     long uid = -update.chat_id;
                     if (uid == 0) {
                         uid = update.user_id;
@@ -3926,7 +3928,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     newMessage.date = update.date;
                     newMessage.from_id = update.user_id;
                     newMessage.to_id = new TLRPC.TL_peerUser();
-                    newMessage.to_id.user_id = UserConfig.clientUserId;
+                    newMessage.to_id.user_id = UserConfig.getClientUserId();
                     newMessage.out = false;
                     newMessage.dialog_id = update.user_id;
 
@@ -3938,15 +3940,12 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                         messages.put(newMessage.dialog_id, arr);
                     }
                     arr.add(obj);
-                    if (newMessage.from_id != UserConfig.clientUserId && newMessage.to_id != null) {
+                    if (newMessage.from_id != UserConfig.getClientUserId() && newMessage.to_id != null) {
                         if (newMessage.dialog_id != openned_dialog_id || ApplicationLoader.lastPauseTime != 0) {
                             lastMessage = obj;
                         }
                     }
                 }
-//                if (!contactsIds.contains(update.user_id)) {
-//                    contactsIds.add(update.user_id);
-//                }
             } else if (update instanceof TLRPC.TL_updateContactLink) {
                 if (update.my_link instanceof TLRPC.TL_contacts_myLinkContact || update.my_link instanceof TLRPC.TL_contacts_myLinkRequested && update.my_link.contact) {
                     int idx = contactsIds.indexOf(-update.user_id);
@@ -3978,7 +3977,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 newMessage.date = update.date;
                 newMessage.from_id = 333000;
                 newMessage.to_id = new TLRPC.TL_peerUser();
-                newMessage.to_id.user_id = UserConfig.clientUserId;
+                newMessage.to_id.user_id = UserConfig.getClientUserId();
                 newMessage.out = false;
                 newMessage.dialog_id = 333000;
 
@@ -3990,7 +3989,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     messages.put(newMessage.dialog_id, arr);
                 }
                 arr.add(obj);
-                if (newMessage.from_id != UserConfig.clientUserId && newMessage.to_id != null) {
+                if (newMessage.from_id != UserConfig.getClientUserId() && newMessage.to_id != null) {
                     if (newMessage.dialog_id != openned_dialog_id || ApplicationLoader.lastPauseTime != 0) {
                         lastMessage = obj;
                     }
@@ -4011,7 +4010,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                         messages.put(uid, arr);
                     }
                     arr.add(obj);
-                    if (message.from_id != UserConfig.clientUserId && message.to_id != null) {
+                    if (message.from_id != UserConfig.getClientUserId() && message.to_id != null) {
                         if (uid != openned_dialog_id || ApplicationLoader.lastPauseTime != 0) {
                             lastMessage = obj;
                         }
@@ -4059,7 +4058,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
 
                 if (newChat instanceof TLRPC.TL_encryptedChatRequested && existingChat == null) {
                     int user_id = newChat.participant_id;
-                    if (user_id == UserConfig.clientUserId) {
+                    if (user_id == UserConfig.getClientUserId()) {
                         user_id = newChat.admin_id;
                     }
                     TLRPC.User user = users.get(user_id);
@@ -4354,7 +4353,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
     }
 
     private void showInAppNotification(MessageObject messageObject) {
-        if (!UserConfig.clientActivated) {
+        if (!UserConfig.isClientActivated()) {
             return;
         }
         if (ApplicationLoader.lastPauseTime != 0) {
@@ -4373,7 +4372,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
         int user_id = messageObject.messageOwner.to_id.user_id;
         if (user_id == 0) {
             user_id = messageObject.messageOwner.from_id;
-        } else if (user_id == UserConfig.clientUserId) {
+        } else if (user_id == UserConfig.getClientUserId()) {
             user_id = messageObject.messageOwner.from_id;
         }
 
@@ -4456,7 +4455,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                                 msg = LocaleController.formatString("NotificationContactNewPhoto", R.string.NotificationContactNewPhoto, Utilities.formatName(user.first_name, user.last_name));
                             } else if (messageObject.messageOwner.action instanceof TLRPC.TL_messageActionLoginUnknownLocation) {
                                 String date = String.format("%s %s %s", LocaleController.formatterYear.format(((long)messageObject.messageOwner.date) * 1000), LocaleController.getString("OtherAt", R.string.OtherAt), LocaleController.formatterDay.format(((long)messageObject.messageOwner.date) * 1000));
-                                msg = LocaleController.formatString("NotificationUnrecognizedDevice", R.string.NotificationUnrecognizedDevice, UserConfig.currentUser.first_name, date, messageObject.messageOwner.action.title, messageObject.messageOwner.action.address);
+                                msg = LocaleController.formatString("NotificationUnrecognizedDevice", R.string.NotificationUnrecognizedDevice, UserConfig.getCurrentUser().first_name, date, messageObject.messageOwner.action.title, messageObject.messageOwner.action.address);
                             }
                         } else {
                             if (messageObject.messageOwner.media instanceof TLRPC.TL_messageMediaEmpty) {
@@ -4486,7 +4485,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     if (preferences.getBoolean("EnablePreviewGroup", true)) {
                         if (messageObject.messageOwner instanceof TLRPC.TL_messageService) {
                             if (messageObject.messageOwner.action instanceof TLRPC.TL_messageActionChatAddUser) {
-                                if (messageObject.messageOwner.action.user_id == UserConfig.clientUserId) {
+                                if (messageObject.messageOwner.action.user_id == UserConfig.getClientUserId()) {
                                     msg = LocaleController.formatString("NotificationInvitedToGroup", R.string.NotificationInvitedToGroup, Utilities.formatName(user.first_name, user.last_name), chat.title);
                                 } else {
                                     TLRPC.User u2 = users.get(messageObject.messageOwner.action.user_id);
@@ -4500,7 +4499,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                             } else if (messageObject.messageOwner.action instanceof TLRPC.TL_messageActionChatEditPhoto || messageObject.messageOwner.action instanceof TLRPC.TL_messageActionChatDeletePhoto) {
                                 msg = LocaleController.formatString("NotificationEditedGroupPhoto", R.string.NotificationEditedGroupPhoto, Utilities.formatName(user.first_name, user.last_name), chat.title);
                             } else if (messageObject.messageOwner.action instanceof TLRPC.TL_messageActionChatDeleteUser) {
-                                if (messageObject.messageOwner.action.user_id == UserConfig.clientUserId) {
+                                if (messageObject.messageOwner.action.user_id == UserConfig.getClientUserId()) {
                                     msg = LocaleController.formatString("NotificationGroupKickYou", R.string.NotificationGroupKickYou, Utilities.formatName(user.first_name, user.last_name), chat.title);
                                 } else if (messageObject.messageOwner.action.user_id == user.id) {
                                     msg = LocaleController.formatString("NotificationGroupLeftMember", R.string.NotificationGroupLeftMember, Utilities.formatName(user.first_name, user.last_name), chat.title);
@@ -4597,9 +4596,9 @@ public class MessagesController implements NotificationCenter.NotificationCenter
 
             if (choosenSoundPath != null && !choosenSoundPath.equals("NoSound")) {
                 if (choosenSoundPath.equals(defaultPath)) {
-                    mBuilder.setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
+                    mBuilder.setSound(Settings.System.DEFAULT_NOTIFICATION_URI, AudioManager.STREAM_NOTIFICATION);
                 } else {
-                    mBuilder.setSound(Uri.parse(choosenSoundPath));
+                    mBuilder.setSound(Uri.parse(choosenSoundPath), AudioManager.STREAM_NOTIFICATION);
                 }
             }
 
@@ -4611,7 +4610,6 @@ public class MessagesController implements NotificationCenter.NotificationCenter
             notification.ledOnMS = 1000;
             notification.ledOffMS = 1000;
             if (needVibrate) {
-                notification.defaults = Notification.DEFAULT_VIBRATE;
                 notification.vibrate = new long[]{0, 100, 0, 100};
             } else {
                 notification.vibrate = new long[]{0, 0};
@@ -4765,7 +4763,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
             if (object != null) {
 
                 int from_id = chat.admin_id;
-                if (from_id == UserConfig.clientUserId) {
+                if (from_id == UserConfig.getClientUserId()) {
                     from_id = chat.participant_id;
                 }
 
@@ -4779,7 +4777,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     newMessage.from_id = from_id;
                     newMessage.to_id = new TLRPC.TL_peerUser();
                     newMessage.random_id = message.random_id;
-                    newMessage.to_id.user_id = UserConfig.clientUserId;
+                    newMessage.to_id.user_id = UserConfig.getClientUserId();
                     newMessage.out = false;
                     newMessage.unread = true;
                     newMessage.dialog_id = ((long)chat.id) << 32;
@@ -4924,7 +4922,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                         newMessage.date = message.date;
                         newMessage.from_id = from_id;
                         newMessage.to_id = new TLRPC.TL_peerUser();
-                        newMessage.to_id.user_id = UserConfig.clientUserId;
+                        newMessage.to_id.user_id = UserConfig.getClientUserId();
                         newMessage.out = false;
                         newMessage.dialog_id = ((long)chat.id) << 32;
                         MessagesStorage.getInstance().updateEncryptedChatTTL(chat);

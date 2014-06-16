@@ -118,7 +118,8 @@ public class GroupCreateFinalActivity extends BaseFragment implements Notificati
     @Override
     public View createView(LayoutInflater inflater, ViewGroup container) {
         if (fragmentView == null) {
-            actionBarLayer.setDisplayHomeAsUpEnabled(true);
+            actionBarLayer.setDisplayHomeAsUpEnabled(true, R.drawable.ic_ab_back);
+            actionBarLayer.setBackOverlay(R.layout.updating_state_layout);
             actionBarLayer.setTitle(LocaleController.getString("NewGroup", R.string.NewGroup));
 
             actionBarLayer.setActionBarMenuOnItemClick(new ActionBarLayer.ActionBarMenuOnItemClick() {
@@ -167,7 +168,7 @@ public class GroupCreateFinalActivity extends BaseFragment implements Notificati
             View doneItem = menu.addItemResource(done_button, R.layout.group_create_done_layout);
 
             TextView doneTextView = (TextView)doneItem.findViewById(R.id.done_button);
-            doneTextView.setText(LocaleController.getString("Done", R.string.Done));
+            doneTextView.setText(LocaleController.getString("Done", R.string.Done).toUpperCase());
 
             fragmentView = inflater.inflate(R.layout.group_create_final_layout, container, false);
 
@@ -175,7 +176,9 @@ public class GroupCreateFinalActivity extends BaseFragment implements Notificati
             button2.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
+                    if (getParentActivity() == null) {
+                        return;
+                    }
                     AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
 
                     CharSequence[] items;
@@ -205,6 +208,7 @@ public class GroupCreateFinalActivity extends BaseFragment implements Notificati
             });
 
             avatarImage = (BackupImageView)fragmentView.findViewById(R.id.settings_avatar_image);
+            avatarImage.setImageResource(R.drawable.group_blue);
 
             nameTextView = (EditText)fragmentView.findViewById(R.id.bubble_input_text);
             nameTextView.setHint(LocaleController.getString("EnterGroupNamePlaceholder", R.string.EnterGroupNamePlaceholder));
@@ -301,7 +305,7 @@ public class GroupCreateFinalActivity extends BaseFragment implements Notificati
                     }
                     Bundle args2 = new Bundle();
                     args2.putInt("chat_id", (Integer)args[0]);
-                    presentFragment(new ChatActivity(args2));
+                    presentFragment(new ChatActivity(args2), true);
                 }
             });
         }
