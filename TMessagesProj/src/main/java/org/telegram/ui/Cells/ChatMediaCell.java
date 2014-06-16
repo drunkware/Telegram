@@ -29,6 +29,7 @@ import org.telegram.messenger.TLRPC;
 import org.telegram.messenger.Utilities;
 import org.telegram.objects.MessageObject;
 import org.telegram.objects.PhotoObject;
+import org.telegram.ui.PhotoViewer;
 import org.telegram.ui.Views.GifDrawable;
 import org.telegram.ui.Views.ImageReceiver;
 import org.telegram.ui.Views.ProgressView;
@@ -40,7 +41,7 @@ import java.util.Locale;
 public class ChatMediaCell extends ChatBaseCell implements MediaController.FileDownloadProgressListener {
 
     public static interface ChatMediaCellDelegate {
-        public abstract void didPressedImage(ChatMediaCell cell, ImageReceiver imageReceiver);
+        public abstract void didPressedImage(ChatMediaCell cell);
     }
 
     private static Drawable placeholderInDrawable;
@@ -61,6 +62,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
     private ProgressView progressView;
     public int downloadPhotos = 0;
     private boolean progressVisible = false;
+    private boolean photoNotSet = false;
 
     private int TAG;
 
@@ -199,7 +201,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
         if (currentMessageObject.type == 1) {
             if (buttonState == -1) {
                 if (mediaDelegate != null) {
-                    mediaDelegate.didPressedImage(this, photoImage);
+                    mediaDelegate.didPressedImage(this);
                 }
             } else if (buttonState == 0) {
                 didPressedButton();
@@ -220,7 +222,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             }
         } else if (currentMessageObject.type == 4) {
             if (mediaDelegate != null) {
-                mediaDelegate.didPressedImage(this, photoImage);
+                mediaDelegate.didPressedImage(this);
             }
         }
     }
@@ -274,7 +276,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             }
         } else if (buttonState == 3) {
             if (mediaDelegate != null) {
-                mediaDelegate.didPressedImage(this, photoImage);
+                mediaDelegate.didPressedImage(this);
             }
         }
     }
@@ -292,6 +294,12 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             }
         } else if (currentPhotoObject == null) {
             return true;
+        } else if (currentPhotoObject != null && photoNotSet) {
+            String fileName = MessageObject.getAttachFileName(currentPhotoObject.photoOwner);
+            File cacheFile = new File(Utilities.getCacheDir(), fileName);
+            if (cacheFile.exists()) {
+                return true;
+            }
         }
         return false;
     }
@@ -306,6 +314,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             gifDrawable = null;
             currentPhotoObject = null;
             currentUrl = null;
+            photoNotSet = false;
 
             if (messageObject.type == 8) {
                 gifDrawable = MediaController.getInstance().getGifDrawable(this, false);
@@ -434,6 +443,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                                 photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, messageObject.isOut() ? placeholderOutDrawable : placeholderInDrawable, currentPhotoObject.photoOwner.size);
                             }
                         } else {
+                            photoNotSet = true;
                             if (messageObject.imagePreview != null) {
                                 photoImage.setImageBitmap(messageObject.imagePreview);
                             } else {
@@ -449,6 +459,10 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             invalidate();
         }
         updateButtonState();
+    }
+
+    public ImageReceiver getPhotoImage() {
+        return photoImage;
     }
 
     public void updateButtonState() {
@@ -574,6 +588,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             gifDrawable.draw(canvas);
             canvas.restore();
         } else {
+            photoImage.setVisible(!PhotoViewer.getInstance().isShowingImage(currentMessageObject), false);
             photoImage.draw(canvas, photoImage.imageX, photoImage.imageY, photoWidth, photoHeight);
             drawTime = photoImage.getVisible();
         }
@@ -629,6 +644,9 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
         updateButtonState();
         if (currentMessageObject.type == 8 && lastDownloadedGifMessage != null && lastDownloadedGifMessage.messageOwner.id == currentMessageObject.messageOwner.id && buttonState == 2) {
             didPressedButton();
+        }
+        if (photoNotSet) {
+            setMessageObject(currentMessageObject);
         }
     }
 
