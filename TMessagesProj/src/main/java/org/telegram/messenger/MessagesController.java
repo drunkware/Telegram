@@ -1717,7 +1717,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
         performSendEncryptedRequest(reqSend, newMsgObj, encryptedChat, null);
     }
 
-    private void sendMessage(String message, double lat, double lon, TLRPC.TL_photo photo, TLRPC.TL_video video, MessageObject msgObj, TLRPC.FileLocation location, TLRPC.User user, TLRPC.TL_document document, TLRPC.TL_audio audio, long peer) {
+    private void sendMessage(String message, double lat, double lon, TLRPC.TL_photo photo, TLRPC.TL_video video, MessageObject msgObj, TLRPC.FileLocation location, TLRPC.User user, TLRPC.TL_document document, TLRPC.TL_audio audio, String originalPath, long peer) {
         // If a message came as an object and we are not quoting it then change it back as normal
         if (msgObj != null && !QuoteForward) {
             if (msgObj.messageOwner.media.photo != null) {
@@ -1790,7 +1790,6 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 // TODO: Unknown type, let it continue unchanged [ Maybe show an error to update the code! ]
             }
         }
-    private void sendMessage(String message, double lat, double lon, TLRPC.TL_photo photo, TLRPC.TL_video video, MessageObject msgObj, TLRPC.FileLocation location, TLRPC.User user, TLRPC.TL_document document, TLRPC.TL_audio audio, String originalPath, long peer) {
         TLRPC.Message newMsg = null;
         int type = -1;
         if (message != null) {
