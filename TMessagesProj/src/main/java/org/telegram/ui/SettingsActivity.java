@@ -28,7 +28,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -53,6 +52,7 @@ import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
 import org.telegram.objects.MessageObject;
 import org.telegram.objects.PhotoObject;
+import org.telegram.ui.Adapters.BaseFragmentAdapter;
 import org.telegram.ui.Views.ActionBar.ActionBarLayer;
 import org.telegram.ui.Views.AvatarUpdater;
 import org.telegram.ui.Views.BackupImageView;
@@ -247,7 +247,26 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                         }
                         AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
                         builder.setTitle(LocaleController.getString("TextSize", R.string.TextSize));
-                        builder.setItems(new CharSequence[]{String.format("%d", 12), String.format("%d", 13), String.format("%d", 14), String.format("%d", 15), String.format("%d", 16), String.format("%d", 17), String.format("%d", 18), String.format("%d", 19), String.format("%d", 20), String.format("%d", 21), String.format("%d", 22), String.format("%d", 23), String.format("%d", 24)}, new DialogInterface.OnClickListener() {
+                        builder.setItems(new CharSequence[] {
+                                String.format("%d", 12),
+                                String.format("%d", 13),
+                                String.format("%d", 14),
+                                String.format("%d", 15),
+                                String.format("%d", 16),
+                                String.format("%d", 17),
+                                String.format("%d", 18),
+                                String.format("%d", 19),
+                                String.format("%d", 20),
+                                String.format("%d", 21),
+                                String.format("%d", 22),
+                                String.format("%d", 23),
+                                String.format("%d", 24),
+                                String.format("%d", 25),
+                                String.format("%d", 26),
+                                String.format("%d", 27),
+                                String.format("%d", 28),
+                                String.format("%d", 29),
+                                String.format("%d", 30)}, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
@@ -647,7 +666,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         }
     }
 
-    private class ListAdapter extends BaseAdapter {
+    private class ListAdapter extends BaseFragmentAdapter {
         private Context mContext;
 
         public ListAdapter(Context context) {

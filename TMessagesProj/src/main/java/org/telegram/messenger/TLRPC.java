@@ -8136,6 +8136,9 @@ public class TLRPC {
 
         @Override
         public void freeResources() {
+            if (disableFree) {
+                return;
+            }
             if (bytes != null) {
                 BuffersStorage.getInstance().reuseFreeBuffer(bytes);
                 bytes = null;
@@ -8287,6 +8290,9 @@ public class TLRPC {
 
         @Override
         public void freeResources() {
+            if (disableFree) {
+                return;
+            }
             if (result != null) {
                 result.freeResources();
             }
@@ -8826,7 +8832,7 @@ public class TLRPC {
         }
     }
 
-    public static class TL_documentEncrypted extends Document {
+    public static class TL_documentEncrypted extends TL_document {
         public static int constructor = 0x55555556;
 
 
@@ -8860,7 +8866,7 @@ public class TLRPC {
         }
     }
 
-    public static class TL_videoEncrypted extends Video {
+    public static class TL_videoEncrypted extends TL_video {
         public static int constructor = 0x55555553;
 
 
@@ -9171,6 +9177,9 @@ public class TLRPC {
 
         @Override
         public void freeResources() {
+            if (disableFree) {
+                return;
+            }
             if (bytes != null) {
                 BuffersStorage.getInstance().reuseFreeBuffer(bytes);
                 bytes = null;
@@ -9198,6 +9207,9 @@ public class TLRPC {
 
         @Override
         public void freeResources() {
+            if (disableFree) {
+                return;
+            }
             if (bytes != null) {
                 BuffersStorage.getInstance().reuseFreeBuffer(bytes);
                 bytes = null;
