@@ -2843,7 +2843,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
                 File f = new File(ObjectPath);
                 if (!f.exists() || f.length() == 0) {
-                    ObjectPath = Utilities.getCacheDir().toString() + File.separator + selectedObject.getFileName();
+                    ObjectPath = AndroidUtilities.getCacheDir().toString() + File.separator + selectedObject.getFileName();
                 }
 
                 if (ObjectPath == null) {

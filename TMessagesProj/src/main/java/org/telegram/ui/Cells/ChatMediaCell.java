@@ -621,7 +621,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             canvas.translate(photoImage.imageX + AndroidUtilities.dp(8), photoImage.imageY + AndroidUtilities.dp(6));
             infoLayout.draw(canvas);
             if (infoLayout2 != null) {
-                canvas.translate(infoOffset, photoImage.imageY + Utilities.dp(6));
+                canvas.translate(infoOffset, photoImage.imageY + AndroidUtilities.dp(6));
                 infoLayout2.draw(canvas);
             }
             canvas.restore();
