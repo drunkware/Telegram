@@ -1449,7 +1449,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                                 public void run() {
                                     MessagesController.getInstance().sendMessage(photoFinal, originalPathFinal, dialog_id);
                                     if (chatListView != null) {
-                                        chatListView.setSelection(messages.size() + 1);
+                                        chatListView.setSelectionFromTop(messages.size() - 1, -100000 - chatListView.getPaddingTop());
                                     }
                                     if (paused) {
                                         scrollToTopOnResume = true;
@@ -1538,7 +1538,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             public void run() {
                 MessagesController.getInstance().sendMessage(documentFinal, originalPathFinal, dialog_id);
                 if (chatListView != null) {
-                    chatListView.setSelection(messages.size() + 1);
+                    chatListView.setSelectionFromTop(messages.size() - 1, -100000 - chatListView.getPaddingTop());
                 }
                 if (paused) {
                     scrollToTopOnResume = true;
@@ -1619,7 +1619,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     public void run() {
                         MessagesController.getInstance().sendMessage(videoFinal, originalPathFinal, dialog_id);
                         if (chatListView != null) {
-                            chatListView.setSelection(messages.size() + 1);
+                            chatListView.setSelectionFromTop(messages.size() - 1, -100000 - chatListView.getPaddingTop());
                         }
                         if (paused) {
                             scrollToTopOnResume = true;
@@ -2123,7 +2123,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         } else if (id == 997) {
             MessagesController.getInstance().sendMessage((Double) args[0], (Double) args[1], dialog_id);
             if (chatListView != null) {
-                chatListView.setSelection(messages.size() + 1);
+                chatListView.setSelectionFromTop(messages.size() - 1, -100000 - chatListView.getPaddingTop());
                 scrollToTopOnResume = true;
             }
         } else if (id == MessagesController.chatInfoDidLoaded) {
@@ -2357,7 +2357,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 }
             } else {
                 if (chatListView != null) {
-                    chatListView.setSelection(messages.size() + 1);
+                    chatListView.setSelectionFromTop(messages.size() - 1, -100000 - chatListView.getPaddingTop());
                 }
             }
             scrollToTopUnReadOnResume = false;
@@ -2786,7 +2786,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     random_ids.add(selectedObject.messageOwner.random_id);
                 }
                 MessagesController.getInstance().deleteMessages(arr, random_ids, currentEncryptedChat);
-                chatListView.setSelection(messages.size() + 1);
+                chatListView.setSelectionFromTop(messages.size() - 1, -100000 - chatListView.getPaddingTop());
             }
         } else if (option == 1) {
             if (selectedObject != null) {
@@ -2911,6 +2911,13 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 MessagesController.getInstance().sendMessage((TLRPC.TL_document)messageObject.messageOwner.media.document, null, did);
             } else if (messageObject.messageOwner.media.geo instanceof TLRPC.TL_geoPoint) {
                 MessagesController.getInstance().sendMessage(messageObject.messageOwner.media.geo.lat, messageObject.messageOwner.media.geo._long, did);
+            } else if (messageObject.messageOwner.media.phone_number != null) {
+                TLRPC.User user = new TLRPC.TL_userContact();
+                user.phone = messageObject.messageOwner.media.phone_number;
+                user.first_name = messageObject.messageOwner.media.first_name;
+                user.last_name = messageObject.messageOwner.media.last_name;
+                user.id = messageObject.messageOwner.media.user_id;
+                MessagesController.getInstance().sendMessage(user, did);
             } else {
                 MessagesController.getInstance().sendMessage(messageObject, did);
             }
@@ -2968,7 +2975,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 }
             } else {
                 activity.finishFragment();
-                chatListView.setSelection(messages.size() + 1);
+                chatListView.setSelectionFromTop(messages.size() - 1, -100000 - chatListView.getPaddingTop());
                 scrollToTopOnResume = true;
             }
         }

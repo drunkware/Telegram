@@ -1200,7 +1200,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
         }
     }
 
-    public void processDialogsUpdateRead(final HashMap<Long, Integer>dialogsToUpdate) {
+    public void processDialogsUpdateRead(final HashMap<Long, Integer> dialogsToUpdate) {
         Utilities.RunOnUIThread(new Runnable() {
             @Override
             public void run() {
@@ -1210,6 +1210,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                         currentDialog.unread_count = entry.getValue();
                     }
                 }
+                NotificationsController.getInstance().processDialogsUpdateRead(dialogsToUpdate, true);
                 NotificationCenter.getInstance().postNotificationName(dialogsNeedReload);
             }
         });
@@ -1222,6 +1223,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 final HashMap<Long, TLRPC.TL_dialog> new_dialogs_dict = new HashMap<Long, TLRPC.TL_dialog>();
                 final HashMap<Integer, MessageObject> new_dialogMessage = new HashMap<Integer, MessageObject>();
                 final HashMap<Integer, TLRPC.User> usersLocal = new HashMap<Integer, TLRPC.User>();
+                final HashMap<Long, Integer> dialogsToUpdate = new HashMap<Long, Integer>();
 
                 for (TLRPC.User u : dialogsRes.users) {
                     usersLocal.put(u.id, u);
@@ -1245,6 +1247,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                         }
                     }
                     new_dialogs_dict.put(d.id, d);
+                    dialogsToUpdate.put(d.id, d.unread_count);
                 }
 
                 Utilities.RunOnUIThread(new Runnable() {
@@ -1306,6 +1309,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                                 dialogsServerOnly.add(d);
                             }
                         }
+                        NotificationsController.getInstance().processDialogsUpdateRead(dialogsToUpdate, true);
                         NotificationCenter.getInstance().postNotificationName(dialogsNeedReload);
                     }
                 });
@@ -1587,6 +1591,9 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                                     dialog.unread_count = 0;
                                     NotificationCenter.getInstance().postNotificationName(dialogsNeedReload);
                                 }
+                                HashMap<Long, Integer> dialogsToUpdate = new HashMap<Long, Integer>();
+                                dialogsToUpdate.put(dialog_id, 0);
+                                NotificationsController.getInstance().processDialogsUpdateRead(dialogsToUpdate, true);
                             }
                         }
                     });
@@ -1636,6 +1643,9 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                                 dialog.unread_count = 0;
                                 NotificationCenter.getInstance().postNotificationName(dialogsNeedReload);
                             }
+                            HashMap<Long, Integer> dialogsToUpdate = new HashMap<Long, Integer>();
+                            dialogsToUpdate.put(dialog_id, 0);
+                            NotificationsController.getInstance().processDialogsUpdateRead(dialogsToUpdate, true);
                         }
                     });
                 }
@@ -2713,7 +2723,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                     }
                 });
             }
-        }), true, RPCRequest.RPCRequestClassGeneric | RPCRequest.RPCRequestClassFailOnServerErrors | RPCRequest.RPCRequestClassCanCompress, ConnectionsManager.DEFAULT_DATACENTER_ID);
+        }), true, RPCRequest.RPCRequestClassGeneric | RPCRequest.RPCRequestClassCanCompress, ConnectionsManager.DEFAULT_DATACENTER_ID);
     }
 
     private void putToDelayedMessages(String location, DelayedMessage message) {
@@ -4365,6 +4375,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                         dialog.unread_count += entry.getValue();
                     }
                 }
+                NotificationsController.getInstance().processDialogsUpdateRead(values, false);
                 NotificationCenter.getInstance().postNotificationName(dialogsNeedReload);
             }
         });
@@ -4944,8 +4955,8 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                                                 dialogsServerOnly.add(d);
                                             }
                                         }
-                                        NotificationCenter.getInstance().postNotificationName(dialogsNeedReload);
                                         MessagesStorage.getInstance().putEncryptedChat(chat, user, dialog);
+                                        NotificationCenter.getInstance().postNotificationName(dialogsNeedReload);
                                         NotificationCenter.getInstance().postNotificationName(encryptedChatCreated, chat);
                                         Utilities.stageQueue.postRunnable(new Runnable() {
                                             @Override
