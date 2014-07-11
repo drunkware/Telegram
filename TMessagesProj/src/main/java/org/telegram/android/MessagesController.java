@@ -95,8 +95,6 @@ public class MessagesController implements NotificationCenter.NotificationCenter
     public boolean enableJoined = true;
     public int fontSize = AndroidUtilities.dp(16);
 
-    public static boolean QuoteForward;
-
     private class UserActionUpdates extends TLRPC.Updates {
 
     }
@@ -1849,7 +1847,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
     }
 
     private void sendMessage(String message, double lat, double lon, TLRPC.TL_photo photo, TLRPC.TL_video video, MessageObject msgObj, TLRPC.FileLocation location, TLRPC.User user, TLRPC.TL_document document, TLRPC.TL_audio audio, String originalPath, long peer) {
-        // If a message came as an object and we are not quoting it then change it back as normal
+/*        // If a message came as an object and we are not quoting it then change it back as normal
         if (msgObj != null && !QuoteForward) {
             if (msgObj.messageOwner.media.photo != null) {
                 photo = (TLRPC.TL_photo) msgObj.messageOwner.media.photo;
@@ -1920,7 +1918,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
             } else {
                 // TODO: Unknown type, let it continue unchanged [ Maybe show an error to update the code! ]
             }
-        }
+        }*/
         TLRPC.Message newMsg = null;
         int type = -1;
         if (message != null) {

@@ -178,6 +178,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     private final static int attach_location = 10;
     private final static int chat_menu_avatar = 11;
 
+    private boolean QuoteForward;
+
     public ChatActivity(Bundle args) {
         super(args);
     }
@@ -514,9 +516,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         actionBarLayer.hideActionMode();
                     } else if (id == forward || id == quoteforward) {
                         if (id == quoteforward) {
-                            MessagesController.QuoteForward = true;
+                            QuoteForward = true;
                         } else {
-                            MessagesController.QuoteForward = false;
+                            QuoteForward = false;
                         }
                         Bundle args = new Bundle();
                         args.putBoolean("onlySelect", true);
@@ -2802,9 +2804,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         } else if (option == 2 || option == 4) {
             if (selectedObject != null) {
                 if (option == 2) {
-                    MessagesController.QuoteForward = true;
+                    QuoteForward = true;
                 } else {
-                    MessagesController.QuoteForward = false;
+                    QuoteForward = false;
                 }
 
                 forwaringMessage = selectedObject;
@@ -2924,7 +2926,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         if (dialog_id != 0 && (forwaringMessage != null || !selectedMessagesIds.isEmpty())) {
             if (forwaringMessage != null) {
                 if (forwaringMessage.messageOwner.id > 0) {
-                    if (!param) {
+                    if (QuoteForward) {
                         MessagesController.getInstance().sendMessage(forwaringMessage, did);
                     } else {
                         processForwardFromMe(forwaringMessage, did);
@@ -2936,7 +2938,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 Collections.sort(ids);
                 for (Integer id : ids) {
                     if (id > 0) {
-                        if (!param) {
+                        if (QuoteForward) {
                             MessagesController.getInstance().sendMessage(selectedMessagesIds.get(id), did);
                         } else {
                             processForwardFromMe(selectedMessagesIds.get(id), did);
