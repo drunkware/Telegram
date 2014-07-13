@@ -2930,7 +2930,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     private void forwardSelectedMessages(long did, boolean fromMyName) {
         if (forwaringMessage != null) {
             if (forwaringMessage.messageOwner.id > 0) {
-                if (!fromMyName) {
+                if (QuoteForward) {
                     MessagesController.getInstance().sendMessage(forwaringMessage, did);
                 } else {
                     processForwardFromMe(forwaringMessage, did);
