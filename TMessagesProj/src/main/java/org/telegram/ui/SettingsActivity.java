@@ -100,7 +100,6 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
     private int contactsReimportRow;
     private int contactsSortRow;
     private int rowCount;
-    private int InvisibleStatusRow;
 
     private static class LinkMovementMethodMy extends LinkMovementMethod {
         @Override
@@ -182,7 +181,6 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         numberRow = rowCount++;
         settingsSectionRow = rowCount++;
         enableAnimationsRow = rowCount++;
-        InvisibleStatusRow = rowCount++;
         languageRow = rowCount++;
         notificationRow = rowCount++;
         blockedRow = rowCount++;
@@ -453,15 +451,6 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                         });
                         builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
                         showAlertDialog(builder);
-                    } else if (i == InvisibleStatusRow) {
-                        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
-                        boolean value = preferences.getBoolean("invisible_status", false);
-                        SharedPreferences.Editor editor = preferences.edit();
-                        editor.putBoolean("invisible_status", !value);
-                        editor.commit();
-                        if (listView != null) {
-                            listView.invalidateViews();
-                        }
                     }
                 }
             });
@@ -687,7 +676,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             return i == textSizeRow || i == enableAnimationsRow || i == blockedRow || i == notificationRow || i == backgroundRow ||
                     i == askQuestionRow || i == sendLogsRow || i == sendByEnterRow || i == terminateSessionsRow || i == photoDownloadPrivateRow ||
                     i == photoDownloadChatRow || i == clearLogsRow || i == audioDownloadChatRow || i == audioDownloadPrivateRow || i == languageRow ||
-                    i == switchBackendButtonRow || i == telegramFaqRow || i == contactsSortRow || i == contactsReimportRow  || i == InvisibleStatusRow;
+                    i == switchBackendButtonRow || i == telegramFaqRow || i == contactsSortRow || i == contactsReimportRow;
         }
 
         @Override
@@ -936,15 +925,6 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                     } else {
                         checkButton.setImageResource(R.drawable.btn_check_off);
                     }
-                } else if (i == InvisibleStatusRow) {
-                    textView.setText(LocaleController.getString("InvisibleStatus", R.string.InvisibleStatus));
-                    divider.setVisibility(View.VISIBLE);
-                    boolean enabled = preferences.getBoolean("invisible_status", false);
-                    if (enabled) {
-                        checkButton.setImageResource(R.drawable.btn_check_on);
-                    } else {
-                        checkButton.setImageResource(R.drawable.btn_check_off);
-                    }
                 }
 //                if (i == 7) {
 //                    textView.setText(LocaleController.getString(R.string.SaveIncomingPhotos));
@@ -1095,7 +1075,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 return 1;
             } else if (i == textSizeRow || i == languageRow || i == contactsSortRow  || i == photoDownloadChatRow || i == photoDownloadPrivateRow || i == audioDownloadChatRow || i == audioDownloadPrivateRow) {
                 return 5;
-            } else if (i == enableAnimationsRow || i == sendByEnterRow || i == InvisibleStatusRow) {
+            } else if (i == enableAnimationsRow || i == sendByEnterRow) {
                 return 3;
             } else if (i == numberRow || i == notificationRow || i == blockedRow || i == backgroundRow || i == askQuestionRow || i == sendLogsRow || i == terminateSessionsRow || i == clearLogsRow || i == switchBackendButtonRow || i == telegramFaqRow || i == contactsReimportRow) {
                 return 2;
