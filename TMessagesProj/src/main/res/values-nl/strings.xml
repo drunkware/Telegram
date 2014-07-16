@@ -311,6 +311,8 @@
     <string name="Copy">Kopiëren</string>
     <string name="Delete">Verwijderen</string>
     <string name="Forward">Doorsturen</string>
+    <string name="QuoteForward">Quote and Forward</string>
+    <string name="Share">Share</string>
     <string name="Retry">Opnieuw proberen</string>
     <string name="FromCamera">Van camera</string>
     <string name="FromGalley">Uit galerij</string>

@@ -311,6 +311,8 @@
     <string name="Copy">Copia</string>
     <string name="Delete">Elimina</string>
     <string name="Forward">Inoltra</string>
+    <string name="QuoteForward">Quote and Forward</string>
+    <string name="Share">Share</string>
     <string name="Retry">Riprova</string>
     <string name="FromCamera">Dalla fotocamera</string>
     <string name="FromGalley">Dalla galleria</string>
