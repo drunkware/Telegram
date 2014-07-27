@@ -101,15 +101,18 @@ public class ConnectionsManager implements Action.ActionDelegate, TcpConnection.
         public void run() {
             Utilities.stageQueue.handler.removeCallbacks(stageRunnable);
             if (datacenters != null) {
+                Datacenter datacenter = datacenterWithId(currentDatacenterId);
                 if (sendingPushPing && lastPushPingTime < System.currentTimeMillis() - 30000 || Math.abs(lastPushPingTime - System.currentTimeMillis()) > 60000 * 3 + 10000) {
                     lastPushPingTime = 0;
                     sendingPushPing = false;
+                    if (datacenter != null && datacenter.pushConnection != null) {
+                        datacenter.pushConnection.suspendConnection(true);
+                    }
                     FileLog.e("tmessages", "push ping timeout");
                 }
                 if (lastPushPingTime < System.currentTimeMillis() - 60000 * 3) {
                     FileLog.e("tmessages", "time for push ping");
                     lastPushPingTime = System.currentTimeMillis();
-                    Datacenter datacenter = datacenterWithId(currentDatacenterId);
                     if (datacenter != null) {
                         generatePing(datacenter, true);
                     }
@@ -448,7 +451,7 @@ public class ConnectionsManager implements Action.ActionDelegate, TcpConnection.
 
                 datacenter = new Datacenter();
                 datacenter.datacenterId = 4;
-                datacenter.addAddressAndPort("31.210.235.12", 443);
+                datacenter.addAddressAndPort("149.154.167.90", 443);
                 datacenters.put(datacenter.datacenterId, datacenter);
 
                 datacenter = new Datacenter();
@@ -1092,6 +1095,10 @@ public class ConnectionsManager implements Action.ActionDelegate, TcpConnection.
                     }
                 }
 
+                if (request.transportChannelToken != 0 && request.transportChannelToken != connection.channelToken) {
+                    request.lastResendTime = 0;
+                }
+
                 request.retryCount++;
                 NetworkMessage networkMessage = new NetworkMessage();
                 networkMessage.protoMessage = new TLRPC.TL_protoMessage();
@@ -1726,7 +1733,7 @@ public class ConnectionsManager implements Action.ActionDelegate, TcpConnection.
         });
     }
 
-    void rpcCompleted(final long requestMsgId) {
+    private void rpcCompleted(final long requestMsgId) {
         Utilities.stageQueue.postRunnable(new Runnable() {
             @Override
             public void run() {
@@ -1917,6 +1924,7 @@ public class ConnectionsManager implements Action.ActionDelegate, TcpConnection.
                     futureSalts.freeResources();
 
                     messagesConfirmed(requestMid);
+                    request.completed = true;
                     rpcCompleted(requestMid);
 
                     break;
@@ -2132,6 +2140,7 @@ public class ConnectionsManager implements Action.ActionDelegate, TcpConnection.
                                     FileLog.e("tmessages", "rpc is init, but init connection already completed");
                                 }
                             }
+                            request.completed = true;
                             rpcCompleted(resultMid);
                         } else {
                             request.runningMessageId = 0;
@@ -2217,18 +2226,16 @@ public class ConnectionsManager implements Action.ActionDelegate, TcpConnection.
             boolean confirm = true;
 
             if (detailedInfo instanceof TLRPC.TL_msg_detailed_info) {
-                long requestMid = ((TLRPC.TL_msg_detailed_info)detailedInfo).msg_id;
                 for (RPCRequest request : runningRequests) {
-                    if (request.respondsToMessageId(requestMid)) {
-                        if ((request.flags & RPCRequest.RPCRequestClassDownloadMedia) != 0) {
-                            if (request.runningStartTime + 60 < System.currentTimeMillis() / 1000) {
-                                requestResend = true;
-                            } else {
-                                confirm = false;
-                            }
+                    if (request.respondsToMessageId(detailedInfo.msg_id)) {
+                        if (request.completed) {
                             break;
-                        } else {
+                        }
+                        if (request.lastResendTime == 0 || request.lastResendTime + 60 < (int)(System.currentTimeMillis() / 1000)) {
+                            request.lastResendTime = (int)(System.currentTimeMillis() / 1000);
                             requestResend = true;
+                        } else {
+                            confirm = false;
                         }
                         break;
                     }
@@ -2249,10 +2256,8 @@ public class ConnectionsManager implements Action.ActionDelegate, TcpConnection.
                 ArrayList<NetworkMessage> arr = new ArrayList<NetworkMessage>();
                 arr.add(networkMessage);
                 sendMessagesToTransport(arr, connection, false);
-            } else {
-                if (confirm) {
-                    connection.addMessageToConfirm(detailedInfo.answer_msg_id);
-                }
+            } else if (confirm) {
+                connection.addMessageToConfirm(detailedInfo.answer_msg_id);
             }
         } else if (message instanceof TLRPC.TL_gzip_packed) {
             TLRPC.TL_gzip_packed packet = (TLRPC.TL_gzip_packed)message;
@@ -2374,7 +2379,7 @@ public class ConnectionsManager implements Action.ActionDelegate, TcpConnection.
                         FileLog.e("tmessages", "no network available");
                     }
                 } catch (Exception e) {
-                    FileLog.e("tmessages", "NETWORK STATE GET ERROR");
+                    FileLog.e("tmessages", "NETWORK STATE GET ERROR", e);
                 }
             }
             final int stateCopy = connectionState;

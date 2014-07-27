@@ -89,7 +89,8 @@ import java.util.HashMap;
 import java.util.concurrent.Semaphore;
 
 public class ChatActivity extends BaseFragment implements NotificationCenter.NotificationCenterDelegate, MessagesActivity.MessagesActivityDelegate,
-        DocumentSelectActivity.DocumentSelectActivityDelegate, PhotoViewer.PhotoViewerProvider, PhotoPickerActivity.PhotoPickerActivityDelegate {
+        DocumentSelectActivity.DocumentSelectActivityDelegate, PhotoViewer.PhotoViewerProvider, PhotoPickerActivity.PhotoPickerActivityDelegate,
+        VideoEditorActivity.VideoEditorActivityDelegate {
 
     private ChatActivityEnterView chatActivityEnterView;
     private View timeItem;
@@ -1327,7 +1328,15 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     }
                     currentPicturePath = null;
                 }
-                processSendingVideo(videoPath);
+                /*if(android.os.Build.VERSION.SDK_INT >= 10) {
+                    Bundle args = new Bundle();
+                    args.putString("videoPath", videoPath);
+                    VideoEditorActivity fragment = new VideoEditorActivity(args);
+                    fragment.setDelegate(this);
+                    presentFragment(fragment);
+                } else {*/
+                    processSendingVideo(videoPath);
+                //}
             } else if (requestCode == 21) {
                 if (data == null || data.getData() == null) {
                     showAttachmentError();
@@ -1346,6 +1355,11 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 processSendingDocument(tempPath, originalPath);
             }
         }
+    }
+
+    @Override
+    public void didFinishedVideoConverting(String videoPath) {
+        processSendingVideo(videoPath);
     }
 
     private void showAttachmentError() {
@@ -1979,7 +1993,9 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                             messages.add(0, dateObj);
                         }
                         if (!obj.isOut() && obj.messageOwner.unread) {
-                            obj.messageOwner.unread = false;
+                            if (!paused) {
+                                obj.messageOwner.unread = false;
+                            }
                             markAsRead = true;
                         }
                         dayArray.add(0, obj);
@@ -2374,6 +2390,12 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
         }
         paused = false;
         if (readWhenResume && !messages.isEmpty()) {
+            for (MessageObject messageObject : messages) {
+                if (!messageObject.isUnread() && !messageObject.isFromMe()) {
+                    break;
+                }
+                messageObject.messageOwner.unread = false;
+            }
             readWhenResume = false;
             MessagesController.getInstance().markDialogAsRead(dialog_id, messages.get(0).messageOwner.id, readWithMid, 0, readWithDate, true);
         }
@@ -3362,7 +3384,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
                     @Override
                     public boolean canPerformActions() {
-                        return !actionBarLayer.isActionModeShowed();
+                        return actionBarLayer != null && !actionBarLayer.isActionModeShowed();
                     }
                 };
                 if (view instanceof ChatMediaCell) {

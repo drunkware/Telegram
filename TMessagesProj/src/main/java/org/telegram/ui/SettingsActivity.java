@@ -293,7 +293,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                     } else if (i == notificationRow) {
                         presentFragment(new SettingsNotificationsActivity());
                     } else if (i == blockedRow) {
-                        presentFragment(new SettingsBlockedUsers());
+                        presentFragment(new SettingsBlockedUsersActivity());
                     } else if (i == backgroundRow) {
                         presentFragment(new SettingsWallpapersActivity());
                     } else if (i == askQuestionRow) {
@@ -962,7 +962,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                                     MessagesController.getInstance().unregistedPush();
                                     MessagesController.getInstance().logOut();
                                     UserConfig.clearConfig();
-                                    MessagesStorage.getInstance().cleanUp();
+                                    MessagesStorage.getInstance().cleanUp(false);
                                     MessagesController.getInstance().cleanUp();
                                     ContactsController.getInstance().deleteAllAppAccounts();
                                 }
