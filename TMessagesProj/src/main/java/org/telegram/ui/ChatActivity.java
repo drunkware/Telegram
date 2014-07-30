@@ -129,6 +129,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     private View pagedownButton;
     private TextView topPanelText;
     private long dialog_id;
+    private boolean isBraodcast = false;
     private HashMap<Integer, MessageObject> selectedMessagesIds = new HashMap<Integer, MessageObject>();
     private HashMap<Integer, MessageObject> selectedMessagesCanCopyIds = new HashMap<Integer, MessageObject>();
 
@@ -218,7 +219,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             if (chatId > 0) {
                 dialog_id = -chatId;
             } else {
-                dialog_id = ((long)chatId) << 32;
+                isBraodcast = true;
+                dialog_id = AndroidUtilities.makeBroadcastId(chatId);
             }
         } else if (userId != 0) {
             currentUser = MessagesController.getInstance().users.get(userId);
@@ -1060,8 +1062,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
     private int getMessageType(MessageObject messageObject) {
         if (currentEncryptedChat == null) {
-            boolean isBroadcastError = (int)dialog_id == 0 && messageObject.messageOwner.id <= 0 && messageObject.messageOwner.send_state == MessagesController.MESSAGE_SEND_STATE_SEND_ERROR;
-            if ((int)dialog_id != 0 && messageObject.messageOwner.id <= 0 && messageObject.isOut() || isBroadcastError) {
+            boolean isBroadcastError = isBraodcast && messageObject.messageOwner.id <= 0 && messageObject.messageOwner.send_state == MessagesController.MESSAGE_SEND_STATE_SEND_ERROR;
+            if (!isBraodcast && messageObject.messageOwner.id <= 0 && messageObject.isOut() || isBroadcastError) {
                 if (messageObject.messageOwner.send_state == MessagesController.MESSAGE_SEND_STATE_SEND_ERROR) {
                     if (!(messageObject.messageOwner.media instanceof TLRPC.TL_messageMediaEmpty)) {
                         return 0;
@@ -1787,7 +1789,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     if (messArr.size() != count) {
                         if (isCache) {
                             cacheEndReaced = true;
-                            if ((int)dialog_id == 0) {
+                            if (currentEncryptedChat != null || isBraodcast) {
                                 endReached = true;
                             }
                         } else {
@@ -2998,7 +3000,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     @Override
     public void didSelectDialog(MessagesActivity activity, long did, boolean param) {
         if (dialog_id != 0 && (forwaringMessage != null || !selectedMessagesIds.isEmpty())) {
-            if ((int)dialog_id == 0 && currentEncryptedChat == null) {
+            if (isBraodcast) {
                 param = true;
             }
             if (did != dialog_id) {
