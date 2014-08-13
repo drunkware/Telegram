@@ -217,7 +217,6 @@ public class MessagesStorage {
                     cacheFile.delete();
                     cacheFile = null;
                 }
-                storageQueue.cleanupQueue();
                 openDatabase();
                 if (isLogin) {
                     Utilities.stageQueue.postRunnable(new Runnable() {
@@ -719,6 +718,11 @@ public class MessagesStorage {
                                 }
                             }
                         } else {
+                            for (TLRPC.TL_chatParticipant part : info.participants) {
+                                if (part.user_id == user_id) {
+                                    return;
+                                }
+                            }
                             TLRPC.TL_chatParticipant participant = new TLRPC.TL_chatParticipant();
                             participant.user_id = user_id;
                             participant.inviter_id = invited_id;
@@ -751,7 +755,7 @@ public class MessagesStorage {
         });
     }
 
-    public void loadChatInfo(final int chat_id) {
+    public void loadChatInfo(final int chat_id, final Semaphore semaphore) {
         storageQueue.postRunnable(new Runnable() {
             @Override
             public void run() {
@@ -769,12 +773,22 @@ public class MessagesStorage {
                     cursor.dispose();
 
                     if (info != null) {
+                        boolean modified = false;
+                        ArrayList<Integer> usersArr = new ArrayList<Integer>();
                         String usersToLoad = "";
-                        for (TLRPC.TL_chatParticipant c : info.participants) {
-                            if (usersToLoad.length() != 0) {
-                                usersToLoad += ",";
+                        for (int a = 0; a < info.participants.size(); a++) {
+                            TLRPC.TL_chatParticipant c = info.participants.get(a);
+                            if (usersArr.contains(c.user_id)) {
+                                info.participants.remove(a);
+                                modified = true;
+                                a--;
+                            } else {
+                                if (usersToLoad.length() != 0) {
+                                    usersToLoad += ",";
+                                }
+                                usersArr.add(c.user_id);
+                                usersToLoad += c.user_id;
                             }
-                            usersToLoad += c.user_id;
                         }
                         if (usersToLoad.length() != 0) {
                             cursor = database.queryFinalized(String.format(Locale.US, "SELECT data, status FROM users WHERE uid IN(%s)", usersToLoad));
@@ -791,10 +805,20 @@ public class MessagesStorage {
                             }
                             cursor.dispose();
                         }
+                        if (modified) {
+                            updateChatInfo(chat_id, info, false);
+                        }
+                    }
+                    if (semaphore != null) {
+                        semaphore.release();
                     }
                     MessagesController.getInstance().processChatInfo(chat_id, info, loadedUsers, true);
                 } catch (Exception e) {
                     FileLog.e("tmessages", e);
+                } finally {
+                    if (semaphore != null) {
+                        semaphore.release();
+                    }
                 }
             }
         });
@@ -920,7 +944,7 @@ public class MessagesStorage {
                         cursor.dispose();
                     }
 
-                    cursor = database.queryFinalized("SELECT c.data, c.name FROM chats as c INNER JOIN dialogs as d ON c.uid = -d.did");
+                    cursor = database.queryFinalized("SELECT data, name FROM chats");
                     while (cursor.next()) {
                         String name = cursor.stringValue(1);
                         String[] args = name.split(" ");
@@ -929,6 +953,9 @@ public class MessagesStorage {
                                 ByteBufferDesc data = buffersStorage.getFreeBuffer(cursor.byteArrayLength(0));
                                 if (data != null && cursor.byteBufferValue(0, data.buffer) != 0) {
                                     TLRPC.Chat chat = (TLRPC.Chat) TLClassStore.Instance().TLdeserialize(data, data.readInt32());
+                                    if (!needEncrypted && chat.id < 0) {
+                                        continue;
+                                    }
                                     resultArrayNames.add(Utilities.generateSearchName(chat.title, null, q));
                                     resultArray.add(chat);
                                 }
@@ -938,6 +965,7 @@ public class MessagesStorage {
                         }
                     }
                     cursor.dispose();
+
                     NotificationCenter.getInstance().postNotificationName(MessagesController.reloadSearchResults, token, resultArray, resultArrayNames, encUsers);
                 } catch (Exception e) {
                     FileLog.e("tmessages", e);
@@ -1301,14 +1329,14 @@ public class MessagesStorage {
         });
     }
 
-    public void getMessages(final long dialog_id, final int offset, final int count, final int max_id, final int minDate, final int classGuid, final boolean from_unread, final boolean forward) {
+    public void getMessages(final long dialog_id, final int count, final int max_id, final int minDate, final int classGuid, final boolean from_unread, final boolean forward) {
         storageQueue.postRunnable(new Runnable() {
             @Override
             public void run() {
                 TLRPC.TL_messages_messages res = new TLRPC.TL_messages_messages();
                 int count_unread = 0;
                 int count_query = count;
-                int offset_query = offset;
+                int offset_query = 0;
                 int min_unread_id = 0;
                 int max_unread_id = 0;
                 int max_unread_date = 0;
@@ -1467,7 +1495,7 @@ public class MessagesStorage {
                     res.users.clear();
                     FileLog.e("tmessages", e);
                 } finally {
-                    MessagesController.getInstance().processLoadedMessages(res, dialog_id, offset, count_query, max_id, true, classGuid, min_unread_id, max_unread_id, count_unread, max_unread_date, forward);
+                    MessagesController.getInstance().processLoadedMessages(res, dialog_id, count_query, max_id, true, classGuid, min_unread_id, max_unread_id, count_unread, max_unread_date, forward);
                 }
             }
         });
@@ -1991,7 +2019,7 @@ public class MessagesStorage {
                 } else {
                     state.bindInteger(2, dialog_date != 0 ? dialog_date : value.date);
                 }
-                state.bindInteger(3, unread_count);
+                state.bindInteger(3, old_unread_count + unread_count);
                 state.bindInteger(4, messageId);
                 state.step();
             }

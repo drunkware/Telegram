@@ -143,7 +143,8 @@ public class ChatProfileActivity extends BaseFragment implements NotificationCen
             membersSectionRow = rowCount++;
             rowCount += info.participants.size();
             membersEndRow = rowCount;
-            if (info.participants.size() < 200) {
+            int maxCount = chat_id > 0 ? MessagesController.getInstance().maxGroupCount : MessagesController.getInstance().maxBroadcastCount;
+            if (info.participants.size() < maxCount) {
                 addMemberRow = rowCount++;
             } else {
                 addMemberRow = -1;
@@ -290,7 +291,7 @@ public class ChatProfileActivity extends BaseFragment implements NotificationCen
 
     @Override
     public void restoreSelfArgs(Bundle args) {
-        MessagesController.getInstance().loadChatInfo(chat_id);
+        MessagesController.getInstance().loadChatInfo(chat_id, null);
         if (avatarUpdater != null) {
             avatarUpdater.currentPicturePath = args.getString("path");
         }
@@ -623,10 +624,15 @@ public class ChatProfileActivity extends BaseFragment implements NotificationCen
 
                 textView.setText(chat.title);
 
-                if (chat.participants_count != 0 && onlineCount > 0) {
-                    onlineText.setText(Html.fromHtml(String.format("%s, <font color='#357aa8'>%d %s</font>", LocaleController.formatPluralString("Members", chat.participants_count), onlineCount, LocaleController.getString("Online", R.string.Online))));
+                int count = chat.participants_count;
+                if (info != null) {
+                    count = info.participants.size();
+                }
+
+                if (count != 0 && onlineCount > 0) {
+                    onlineText.setText(Html.fromHtml(String.format("%s, <font color='#357aa8'>%d %s</font>", LocaleController.formatPluralString("Members", count), onlineCount, LocaleController.getString("Online", R.string.Online))));
                 } else {
-                    onlineText.setText(LocaleController.formatPluralString("Members", chat.participants_count));
+                    onlineText.setText(LocaleController.formatPluralString("Members", count));
                 }
 
                 TLRPC.FileLocation photo = null;
@@ -650,7 +656,11 @@ public class ChatProfileActivity extends BaseFragment implements NotificationCen
                     textView.setText(LocaleController.getString("SHAREDMEDIA", R.string.SHAREDMEDIA));
                 } else if (i == membersSectionRow) {
                     TLRPC.Chat chat = MessagesController.getInstance().chats.get(chat_id);
-                    textView.setText(LocaleController.formatPluralString("Members", chat.participants_count).toUpperCase());
+                    int count = chat.participants_count;
+                    if (info != null) {
+                        count = info.participants.size();
+                    }
+                    textView.setText(LocaleController.formatPluralString("Members", count).toUpperCase());
                 }
             } else if (type == 2) {
                 if (view == null) {
