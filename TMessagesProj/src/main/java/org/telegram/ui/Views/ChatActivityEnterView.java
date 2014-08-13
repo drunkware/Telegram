@@ -258,6 +258,15 @@ public class ChatActivityEnterView implements NotificationCenter.NotificationCen
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i2, int i3) {
+                // Check if the text contains Emoji with SB Unicode instead of UTF16 and fix it (specially for messages copied from Whatsapp)
+                CharSequence csBefore = charSequence.subSequence(i, i+i3);
+                CharSequence csAfter = Emoji.fixSBEmoji(csBefore);
+
+                if (!csBefore.toString().contentEquals(csAfter)) {
+                    String NewText = charSequence.toString().replace(csBefore, csAfter);
+                    messsageEditText.setText(NewText, TextView.BufferType.EDITABLE);
+                }
+
                 String message = getTrimmedString(charSequence.toString());
                 sendButton.setEnabled(message.length() != 0);
                 checkSendButton();
