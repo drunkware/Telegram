@@ -21,6 +21,7 @@ import android.view.SoundEffectConstants;
 
 import org.telegram.android.AndroidUtilities;
 import org.telegram.android.ImageLoader;
+import org.telegram.android.MessagesController;
 import org.telegram.messenger.FileLoader;
 import org.telegram.android.MediaController;
 import org.telegram.messenger.R;
@@ -317,7 +318,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                 String str = Utilities.formatFileSize(messageObject.messageOwner.media.document.size);
                 if (currentInfoString == null || !currentInfoString.equals(str)) {
                     currentInfoString = str;
-                    TLRPC.User fromUser = MessagesController.getInstance().users.get(messageObject.messageOwner.from_id);
+                    TLRPC.User fromUser = MessagesController.getInstance().getUser(messageObject.messageOwner.from_id);
                     String senderName = String.format("%s %s", fromUser.first_name, fromUser.last_name);
                     infoOffset = 0;
                     infoWidth = (int) Math.ceil(infoPaint.measureText(senderName));
@@ -332,7 +333,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                 String str = String.format("%d:%02d, %s", minutes, seconds, Utilities.formatFileSize(messageObject.messageOwner.media.video.size));
                 if (currentInfoString == null || !currentInfoString.equals(str)) {
                     currentInfoString = str;
-                    TLRPC.User fromUser = MessagesController.getInstance().users.get(messageObject.messageOwner.from_id);
+                    TLRPC.User fromUser = MessagesController.getInstance().getUser(messageObject.messageOwner.from_id);
                     String senderName = String.format("%s %s", fromUser.first_name, fromUser.last_name);
                     infoOffset = videoIconDrawable.getIntrinsicWidth() + AndroidUtilities.dp(4);
                     infoWidth = (int) Math.ceil(infoPaint.measureText(senderName));
@@ -341,7 +342,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                     infoLayout2 = new StaticLayout(currentInfoString, infoPaint, infoWidth2, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
                 }
             } else if (messageObject.type == 1) {
-                TLRPC.User fromUser = MessagesController.getInstance().users.get(messageObject.messageOwner.from_id);
+                TLRPC.User fromUser = MessagesController.getInstance().getUser(messageObject.messageOwner.from_id);
                 String senderName = String.format("%s %s", fromUser.first_name, fromUser.last_name);
                 if (currentInfoString == null || !currentInfoString.equals(senderName)) {
                     currentInfoString = senderName;
