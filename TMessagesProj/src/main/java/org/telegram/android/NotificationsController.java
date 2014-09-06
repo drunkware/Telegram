@@ -373,6 +373,7 @@ public class NotificationsController {
                     .setContentTitle(name)
                     .setSmallIcon(R.drawable.notification)
                     .setAutoCancel(true)
+                    .setNumber(total_unread_count)
                     .setContentIntent(contentIntent);
 
             String lastMessage = null;
@@ -419,7 +420,7 @@ public class NotificationsController {
             }
 
             if (photoPath != null) {
-                BitmapDrawable img = ImageLoader.getInstance().getImageFromMemory(photoPath, null, "50_50");
+                BitmapDrawable img = ImageLoader.getInstance().getImageFromMemory(photoPath, null, "50_50", null);
                 if (img != null) {
                     mBuilder.setLargeIcon(img.getBitmap());
                 }
@@ -446,7 +447,7 @@ public class NotificationsController {
                 } else if (needVibrate == 0 || needVibrate == 5) {
                     mBuilder.setDefaults(NotificationCompat.DEFAULT_VIBRATE);
                 } else if (needVibrate == 3) {
-                    mBuilder.setVibrate(new long[]{0, 300, 100, 300});
+                    mBuilder.setVibrate(new long[]{0, 500});
                 }
             } else {
                 mBuilder.setVibrate(new long[]{0, 0});
@@ -575,8 +576,8 @@ public class NotificationsController {
                 if (popup != 0) {
                     popupMessages.add(0, messageObject);
                 }
-                pushMessagesDict.put(messageObject.messageOwner.id, messageObject);
                 pushMessages.add(0, messageObject);
+                pushMessagesDict.put(messageObject.messageOwner.id, messageObject);
             }
         }
 
@@ -596,50 +597,42 @@ public class NotificationsController {
         }
     }
 
-    public void processDialogsUpdateRead(final HashMap<Long, Integer> dialogsToUpdate, boolean replace) {
+    public void processDialogsUpdateRead(final HashMap<Long, Integer> dialogsToUpdate) {
         int old_unread_count = total_unread_count;
         SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Notifications", Context.MODE_PRIVATE);
         for (HashMap.Entry<Long, Integer> entry : dialogsToUpdate.entrySet()) {
             long dialog_id = entry.getKey();
 
             int notify_override = preferences.getInt("notify2_" + dialog_id, 0);
-            boolean isChat = (int)dialog_id < 0;
-            Integer currentCount = pushDialogs.get(dialog_id);
-            boolean canAddValue = !(notify_override == 2 || (!preferences.getBoolean("EnableAll", true) || isChat && !preferences.getBoolean("EnableGroup", true)) && notify_override == 0);
+            boolean canAddValue = !(notify_override == 2 || (!preferences.getBoolean("EnableAll", true) || ((int)dialog_id < 0) && !preferences.getBoolean("EnableGroup", true)) && notify_override == 0);
 
+            Integer currentCount = pushDialogs.get(dialog_id);
             Integer newCount = entry.getValue();
-            if (replace || newCount < 0) {
-                if (newCount < 0) {
-                    newCount *= -1;
+            if (newCount < 0) {
+                if (currentCount == null) {
+                    continue;
                 }
+                newCount = currentCount + newCount;
+            }
+            if (canAddValue || newCount == 0) {
                 if (currentCount != null) {
                     total_unread_count -= currentCount;
                 }
-                if (newCount == 0) {
-                    pushDialogs.remove(dialog_id);
-                    for (int a = 0; a < pushMessages.size(); a++) {
-                        MessageObject messageObject = pushMessages.get(a);
-                        if (messageObject.getDialogId() == dialog_id) {
-                            pushMessages.remove(a);
-                            a--;
-                            pushMessagesDict.remove(messageObject.messageOwner.id);
-                            popupMessages.remove(messageObject);
-                        }
+            }
+            if (newCount == 0) {
+                pushDialogs.remove(dialog_id);
+                for (int a = 0; a < pushMessages.size(); a++) {
+                    MessageObject messageObject = pushMessages.get(a);
+                    if (messageObject.getDialogId() == dialog_id) {
+                        pushMessages.remove(a);
+                        a--;
+                        pushMessagesDict.remove(messageObject.messageOwner.id);
+                        popupMessages.remove(messageObject);
                     }
-                } else if (canAddValue) {
-                    total_unread_count += newCount;
-                    pushDialogs.put(dialog_id, newCount);
                 }
             } else if (canAddValue) {
-                if (newCount > 2000000) {
-                    newCount = 2000000 - newCount;
-                }
-                if (currentCount == null) {
-                    currentCount = 0;
-                }
-                currentCount += newCount;
                 total_unread_count += newCount;
-                pushDialogs.put(dialog_id, currentCount);
+                pushDialogs.put(dialog_id, newCount);
             }
         }
         if (old_unread_count != total_unread_count) {
@@ -656,6 +649,28 @@ public class NotificationsController {
         MessagesController.getInstance().putChats(chats, true);
         MessagesController.getInstance().putEncryptedChats(encryptedChats, true);
 
+        pushDialogs.clear();
+        pushMessages.clear();
+        pushMessagesDict.clear();
+        total_unread_count = 0;
+        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Notifications", Context.MODE_PRIVATE);
+        HashMap<Long, Boolean> settingsCache = new HashMap<Long, Boolean>();
+
+        for (HashMap.Entry<Long, Integer> entry : dialogs.entrySet()) {
+            long dialog_id = entry.getKey();
+            Boolean value = settingsCache.get(dialog_id);
+            if (value == null) {
+                int notify_override = preferences.getInt("notify2_" + dialog_id, 0);
+                value = !(notify_override == 2 || (!preferences.getBoolean("EnableAll", true) || ((int) dialog_id < 0) && !preferences.getBoolean("EnableGroup", true)) && notify_override == 0);
+                settingsCache.put(dialog_id, value);
+            }
+            if (!value) {
+                continue;
+            }
+            int count = entry.getValue();
+            pushDialogs.put(dialog_id, count);
+            total_unread_count += count;
+        }
         if (messages != null) {
             for (TLRPC.Message message : messages) {
                 if (pushMessagesDict.containsKey(message.id)) {
@@ -663,28 +678,25 @@ public class NotificationsController {
                 }
                 MessageObject messageObject = new MessageObject(message, null, 0);
                 long dialog_id = messageObject.getDialogId();
-                if (dialog_id == openned_dialog_id && ApplicationLoader.isScreenOn) {
+                Boolean value = settingsCache.get(dialog_id);
+                if (value == null) {
+                    int notify_override = preferences.getInt("notify2_" + dialog_id, 0);
+                    value = !(notify_override == 2 || (!preferences.getBoolean("EnableAll", true) || ((int) dialog_id < 0) && !preferences.getBoolean("EnableGroup", true)) && notify_override == 0);
+                    settingsCache.put(dialog_id, value);
+                }
+                if (!value || dialog_id == openned_dialog_id && ApplicationLoader.isScreenOn) {
                     continue;
                 }
                 pushMessagesDict.put(messageObject.messageOwner.id, messageObject);
                 pushMessages.add(0, messageObject);
             }
         }
-
-        pushDialogs.clear();
-        total_unread_count = 0;
-        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Notifications", Context.MODE_PRIVATE);
-        for (HashMap.Entry<Long, Integer> entry : dialogs.entrySet()) {
-            pushDialogs.put(entry.getKey(), entry.getValue());
-            total_unread_count += entry.getValue();
-        }
         if (total_unread_count == 0) {
-            pushMessages.clear();
-            pushMessagesDict.clear();
             popupMessages.clear();
             showOrUpdateNotification(false);
             NotificationCenter.getInstance().postNotificationName(NotificationCenter.pushMessagesUpdated);
         }
+
         if (preferences.getBoolean("badgeNumber", true)) {
             setBadge(ApplicationLoader.applicationContext, total_unread_count);
         }

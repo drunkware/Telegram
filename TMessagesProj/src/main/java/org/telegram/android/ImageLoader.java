@@ -278,10 +278,7 @@ public class ImageLoader {
                     }
                 }
             } catch (Exception e) {
-                if (canDeleteFile && cacheFileFinal != null && cacheFileFinal.length() == 0) {
-                    cacheFileFinal.delete();
-                }
-                FileLog.e("tmessages", e);
+                //don't promt
             }
             return image != null ? new BitmapDrawable(image) : null;
         }
@@ -628,7 +625,7 @@ public class ImageLoader {
         }
     }
 
-    public BitmapDrawable getImageFromMemory(TLRPC.FileLocation url, String httpUrl, String filter) {
+    public BitmapDrawable getImageFromMemory(TLRPC.FileLocation url, String httpUrl, String filter, ImageReceiver imageReceiver) {
         if (url == null && httpUrl == null) {
             return null;
         }
@@ -641,7 +638,17 @@ public class ImageLoader {
         if (filter != null) {
             key += "@" + filter;
         }
-        return memCache.get(key);
+        BitmapDrawable bitmapDrawable = memCache.get(key);
+        if (bitmapDrawable != null && imageReceiver != null) {
+            Integer TAG = imageReceiver.getTag();
+            if (TAG != null) {
+                CacheImage alreadyLoadingImage = imageLoadingByTag.get(TAG);
+                if (alreadyLoadingImage != null) {
+                    alreadyLoadingImage.removeImageView(imageReceiver);
+                }
+            }
+        }
+        return bitmapDrawable;
     }
 
     public void replaceImageInCache(final String oldKey, final String newKey) {
@@ -668,8 +675,8 @@ public class ImageLoader {
         String url;
         String key;
         if (httpUrl != null) {
-            url = httpUrl;
             key = Utilities.MD5(httpUrl);
+            url = key + ".jpg";
         } else {
             key = fileLocation.volume_id + "_" + fileLocation.local_id;
             url = key + ".jpg";
@@ -735,7 +742,8 @@ public class ImageLoader {
                 }
                 img.addImageView(imageView);
                 imageLoadingByKeys.put(key, img);
-                cacheOutTasks.add(new CacheOutTask(img));
+                img.cacheTask = new CacheOutTask(img);
+                cacheOutTasks.add(img.cacheTask);
                 runCacheTasks(false);
             } else {
                 img.url = url;
