@@ -23,6 +23,7 @@ import android.view.SoundEffectConstants;
 import org.telegram.android.AndroidUtilities;
 import org.telegram.android.ImageLoader;
 import org.telegram.android.LocaleController;
+import org.telegram.android.MessagesController;
 import org.telegram.messenger.FileLoader;
 import org.telegram.android.MediaController;
 import org.telegram.messenger.R;
@@ -723,9 +724,13 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                 infoLayout.draw(canvas);
                 canvas.restore();
             }
-        } else if (infoLayout != null && (buttonState == 1 || buttonState == 0 || buttonState == 3)) {
+        } else if (infoLayout != null && (buttonState == 1 || buttonState == 0 || buttonState == 3 || currentMessageObject.type == 1)) {
             infoPaint.setColor(0xffffffff);
-            setDrawableBounds(mediaBackgroundDrawable, photoImage.getImageX() + AndroidUtilities.dp(4), photoImage.getImageY() + AndroidUtilities.dp(4), infoWidth + AndroidUtilities.dp(8) + infoOffset, AndroidUtilities.dpf(16.5f));
+            if (currentMessageObject.type == 1){
+                setDrawableBounds(mediaBackgroundDrawable, photoImage.getImageX() + AndroidUtilities.dp(4), photoImage.getImageY() + AndroidUtilities.dp(4), infoWidth + AndroidUtilities.dp(8) + infoOffset, AndroidUtilities.dpf(16.5f));
+            } else {
+                setDrawableBounds(mediaBackgroundDrawable, photoImage.getImageX() + AndroidUtilities.dp(4), photoImage.getImageY() + AndroidUtilities.dp(4), Math.max(infoWidth , infoWidth2 + infoOffset) + AndroidUtilities.dp(8) + infoOffset, 2 * AndroidUtilities.dpf(16.5f));
+            }
             mediaBackgroundDrawable.draw(canvas);
 
             if (currentMessageObject.type == 3) {
