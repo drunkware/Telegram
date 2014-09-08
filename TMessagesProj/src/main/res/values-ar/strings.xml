@@ -226,6 +226,7 @@
     <string name="TextSize">حجم نص الرسائل</string>
     <string name="AskAQuestion">اسأل سؤالًا</string>
     <string name="EnableAnimations">تفعيل التأثيرات المتحركة</string>
+    <string name="EnableMarkdown">تفعيل رموز التنسيق</string>
     <string name="Unblock">إلغاء الحظر</string>
     <string name="UnblockText">إضغط بإستمرار على المستخدم لإلغاء الحظر</string>
     <string name="NoBlocked">لا توجد جهات اتصال محظورة</string>
@@ -449,5 +450,4 @@
 
     <!--Don't change this! Not for localization!-->
     <string name="CacheTag">CACHE_TAG</string>
-    <string name="EnableMarkdown">Enable Markdown</string>
 </resources>

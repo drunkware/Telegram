@@ -226,6 +226,7 @@
     <string name="TextSize">Tekstgrootte berichten</string>
     <string name="AskAQuestion">Een vraag stellen</string>
     <string name="EnableAnimations">Animaties</string>
+    <string name="EnableMarkdown">Enable Markdown</string>
     <string name="Unblock">Deblokkeren</string>
     <string name="UnblockText">Houd een gebruiker ingedrukt om hem/haar te deblokkeren.</string>
     <string name="NoBlocked">Geen geblokkeerde gebruikers</string>
@@ -449,5 +450,4 @@
 
     <!--Don't change this! Not for localization!-->
     <string name="CacheTag">CACHE_TAG</string>
-    <string name="EnableMarkdown">Enable Markdown</string>
 </resources>

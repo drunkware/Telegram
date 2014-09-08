@@ -226,6 +226,7 @@
     <string name="TextSize">Messages Text Size</string>
     <string name="AskAQuestion">Ask a Question</string>
     <string name="EnableAnimations">Enable Animations</string>
+    <string name="EnableMarkdown">Enable Markdown</string>
     <string name="Unblock">Unblock</string>
     <string name="UnblockText">Tap and hold on user to unblock.</string>
     <string name="NoBlocked">No blocked users yet</string>
@@ -449,5 +450,4 @@
 
     <!--Don't change this! Not for localization!-->
     <string name="CacheTag">CACHE_TAG</string>
-    <string name="EnableMarkdown">Enable Markdown</string>
 </resources>

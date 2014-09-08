@@ -226,6 +226,7 @@
     <string name="TextSize">Textgröße für Nachrichten</string>
     <string name="AskAQuestion">Eine Frage stellen</string>
     <string name="EnableAnimations">Animationen aktivieren</string>
+    <string name="EnableMarkdown">Enable Markdown</string>
     <string name="Unblock">Freigeben</string>
     <string name="UnblockText">Tippe und halte einen Benutzer, um ihn freizugeben.</string>
     <string name="NoBlocked">Keine blockierten Benutzer</string>
@@ -449,5 +450,4 @@
 
     <!--Don't change this! Not for localization!-->
     <string name="CacheTag">CACHE_TAG</string>
-    <string name="EnableMarkdown">Enable Markdown</string>
 </resources>
