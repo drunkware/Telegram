@@ -8,6 +8,7 @@
 
 package org.telegram.android;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.text.Html;
@@ -23,6 +24,7 @@ import org.telegram.messenger.TLRPC;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
+import org.telegram.ui.ApplicationLoader;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -267,14 +269,17 @@ public class MessageObject {
 
             messageText = Emoji.fixSBEmoji(messageText);    //Fix SB encoding if needed before displaying the message
 
-            // To reserve all spaces since "fromHtml" will collapse all consecutive spaces into only 1.
-            // So every two spaces will be replaced by one space and one non-breaking space that way we can reserve the spaces and also allow word wrapping.
-            messageText = messageText.toString().replace("  ", " &nbsp;");
-            // Text between two * will be in BLUE and text between two ^ will be BIG size
-            messageText = messageText.toString().replaceAll("\\^(.+?)\\^", "<big>$1</big>");
-            messageText = messageText.toString().replaceAll("\\*(.+?)\\*", "<font color='blue'>$1</font>");
-            messageText = messageText.toString().replace("\n", "<br>");     // Change new line to something that Html will understand
-            messageText = Html.fromHtml(messageText.toString());
+            // Message Markdown
+            if (ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE).getBoolean("view_markdown", false)) {
+                // To reserve all spaces since "fromHtml" will collapse all consecutive spaces into only 1.
+                // So every two spaces will be replaced by one space and one non-breaking space that way we can reserve the spaces and also allow word wrapping.
+                messageText = messageText.toString().replace("  ", " &nbsp;");
+                // Text between two * will be in BLUE and text between two ^ will be BIG size
+                messageText = messageText.toString().replaceAll("\\^(.+?)\\^", "<big>$1</big>");
+                messageText = messageText.toString().replaceAll("\\*(.+?)\\*", "<font color='blue'>$1</font>");
+                messageText = messageText.toString().replace("\n", "<br>");     // Change new line to something that Html will understand
+                messageText = Html.fromHtml(messageText.toString());
+            }
             messageText = Emoji.replaceEmoji(messageText, textPaint.getFontMetricsInt(), AndroidUtilities.dp(20));
         }
         

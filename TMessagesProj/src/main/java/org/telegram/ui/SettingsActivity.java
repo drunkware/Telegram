@@ -76,6 +76,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
     private int settingsSectionRow;
     private int textSizeRow;
     private int enableAnimationsRow;
+    private int enableMarkdownRow;
     private int notificationRow;
     private int blockedRow;
     private int backgroundRow;
@@ -180,6 +181,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         numberRow = rowCount++;
         settingsSectionRow = rowCount++;
         enableAnimationsRow = rowCount++;
+        enableMarkdownRow = rowCount++;
         languageRow = rowCount++;
         notificationRow = rowCount++;
         blockedRow = rowCount++;
@@ -283,6 +285,15 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                         boolean animations = preferences.getBoolean("view_animations", true);
                         SharedPreferences.Editor editor = preferences.edit();
                         editor.putBoolean("view_animations", !animations);
+                        editor.commit();
+                        if (listView != null) {
+                            listView.invalidateViews();
+                        }
+                    } else if (i == enableMarkdownRow) {
+                        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
+                        boolean animations = preferences.getBoolean("view_markdown", false);
+                        SharedPreferences.Editor editor = preferences.edit();
+                        editor.putBoolean("view_markdown", !animations);
                         editor.commit();
                         if (listView != null) {
                             listView.invalidateViews();
@@ -717,7 +728,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         public boolean isEnabled(int i) {
             return i == textSizeRow || i == enableAnimationsRow || i == blockedRow || i == notificationRow || i == backgroundRow ||
                     i == askQuestionRow || i == sendLogsRow || i == sendByEnterRow || i == terminateSessionsRow || i == wifiDownloadRow ||
-                    i == mobileDownloadRow || i == clearLogsRow || i == roamingDownloadRow || i == languageRow ||
+                    i == mobileDownloadRow || i == clearLogsRow || i == roamingDownloadRow || i == languageRow || i == enableMarkdownRow ||
                     i == switchBackendButtonRow || i == telegramFaqRow || i == contactsSortRow || i == contactsReimportRow;
         }
 
@@ -922,6 +933,15 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                     } else {
                         checkButton.setImageResource(R.drawable.btn_check_off);
                     }
+                } else if (i == enableMarkdownRow) {
+                    textView.setText(LocaleController.getString("EnableMarkdown", R.string.EnableMarkdown));
+                    divider.setVisibility(View.VISIBLE);
+                    boolean enabled = preferences.getBoolean("view_markdown", false);
+                    if (enabled) {
+                        checkButton.setImageResource(R.drawable.btn_check_on);
+                    } else {
+                        checkButton.setImageResource(R.drawable.btn_check_off);
+                    }
                 }
 //                if (i == 7) {
 //                    textView.setText(LocaleController.getString(R.string.SaveIncomingPhotos));
@@ -1074,7 +1094,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 return 1;
             } else if (i == textSizeRow || i == languageRow || i == contactsSortRow) {
                 return 5;
-            } else if (i == enableAnimationsRow || i == sendByEnterRow) {
+            } else if (i == enableAnimationsRow || i == sendByEnterRow ||i == enableMarkdownRow) {
                 return 3;
             } else if (i == numberRow || i == notificationRow || i == blockedRow || i == backgroundRow || i == askQuestionRow || i == sendLogsRow || i == terminateSessionsRow || i == clearLogsRow || i == switchBackendButtonRow || i == telegramFaqRow || i == contactsReimportRow) {
                 return 2;

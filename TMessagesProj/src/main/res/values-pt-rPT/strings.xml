@@ -453,4 +453,5 @@
 
     <!--Don't change this! Not for localization!-->
     <string name="CacheTag">CACHE_TAG</string>
+    <string name="EnableMarkdown">Enable Markdown</string>
 </resources>
