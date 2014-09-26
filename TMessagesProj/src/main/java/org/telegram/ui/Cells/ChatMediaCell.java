@@ -11,6 +11,7 @@ package org.telegram.ui.Cells;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Layout;
@@ -19,6 +20,7 @@ import android.text.TextPaint;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.SoundEffectConstants;
+import android.view.animation.DecelerateInterpolator;
 
 import org.telegram.android.AndroidUtilities;
 import org.telegram.android.ImageLoader;
@@ -34,7 +36,6 @@ import org.telegram.android.PhotoObject;
 import org.telegram.ui.PhotoViewer;
 import org.telegram.ui.Views.GifDrawable;
 import org.telegram.android.ImageReceiver;
-import org.telegram.ui.Views.RoundProgressView;
 
 import java.io.File;
 import java.util.Locale;
@@ -43,6 +44,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
 
     public static interface ChatMediaCellDelegate {
         public abstract void didPressedImage(ChatMediaCell cell);
+        public abstract void didPressedOther(ChatMediaCell cell);
     }
 
     private static Drawable placeholderInDrawable;
@@ -50,12 +52,16 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
     private static Drawable placeholderDocInDrawable;
     private static Drawable placeholderDocOutDrawable;
     private static Drawable videoIconDrawable;
+    private static Drawable docMenuInDrawable;
+    private static Drawable docMenuOutDrawable;
     private static Drawable[] buttonStatesDrawables = new Drawable[4];
     private static Drawable[][] buttonStatesDrawablesDoc = new Drawable[2][2];
     private static TextPaint infoPaint;
     private static MessageObject lastDownloadedGifMessage = null;
     private static TextPaint namePaint;
     private static Paint docBackPaint;
+    private static Paint progressPaint;
+    private static DecelerateInterpolator decelerateInterpolator;
 
     private GifDrawable gifDrawable = null;
 
@@ -65,7 +71,6 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
     private String currentUrl;
     private String currentPhotoFilter;
     private ImageReceiver photoImage;
-    private RoundProgressView progressView;
     private boolean progressVisible = false;
     private boolean photoNotSet = false;
     private boolean cancelLoading = false;
@@ -75,6 +80,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
     private int buttonState = 0;
     private int buttonPressed = 0;
     private boolean imagePressed = false;
+    private boolean otherPressed = false;
     private int buttonX;
     private int buttonY;
 
@@ -90,6 +96,15 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
     private String currentNameString;
 
     public ChatMediaCellDelegate mediaDelegate = null;
+
+    private float currentProgress = 0;
+    private RectF progressRect = new RectF();
+    private long lastUpdateTime = 0;
+    private boolean animationStarted = false;
+    private float radOffset = 0;
+    private float animatedProgressValue = 0;
+    private long currentProgressTime = 0;
+    private float animationProgressStart = 0;
 
     public ChatMediaCell(Context context) {
         super(context);
@@ -108,6 +123,8 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             buttonStatesDrawablesDoc[0][1] = getResources().getDrawable(R.drawable.docload_g);
             buttonStatesDrawablesDoc[1][1] = getResources().getDrawable(R.drawable.doccancel_g);
             videoIconDrawable = getResources().getDrawable(R.drawable.ic_video);
+            docMenuInDrawable = getResources().getDrawable(R.drawable.doc_actions_b);
+            docMenuOutDrawable = getResources().getDrawable(R.drawable.doc_actions_g);
 
             infoPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
             infoPaint.setTextSize(AndroidUtilities.dp(12));
@@ -117,12 +134,17 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             namePaint.setTextSize(AndroidUtilities.dp(16));
 
             docBackPaint = new Paint();
+
+            progressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            progressPaint.setStyle(Paint.Style.STROKE);
+            progressPaint.setStrokeWidth(AndroidUtilities.dp(2));
+
+            decelerateInterpolator = new DecelerateInterpolator();
         }
 
         TAG = MediaController.getInstance().generateObserverTag();
 
         photoImage = new ImageReceiver(this);
-        progressView = new RoundProgressView();
     }
 
     public void clearGifImage() {
@@ -161,9 +183,21 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                     buttonPressed = 1;
                     invalidate();
                     result = true;
-                } else if (x >= photoImage.getImageX() && x <= photoImage.getImageX() + backgroundWidth && y >= photoImage.getImageY() && y <= photoImage.getImageY() + photoImage.getImageHeight()) {
-                    imagePressed = true;
-                    result = true;
+                } else {
+                    if (currentMessageObject.type == 9) {
+                        if (x >= photoImage.getImageX() && x <= photoImage.getImageX() + backgroundWidth - AndroidUtilities.dp(50) && y >= photoImage.getImageY() && y <= photoImage.getImageY() + photoImage.getImageHeight()) {
+                            imagePressed = true;
+                            result = true;
+                        } else if (x >= photoImage.getImageX() + backgroundWidth - AndroidUtilities.dp(50) && x <= photoImage.getImageX() + backgroundWidth && y >= photoImage.getImageY() && y <= photoImage.getImageY() + photoImage.getImageHeight()) {
+                            otherPressed = true;
+                            result = true;
+                        }
+                    } else {
+                        if (x >= photoImage.getImageX() && x <= photoImage.getImageX() + backgroundWidth && y >= photoImage.getImageY() && y <= photoImage.getImageY() + photoImage.getImageHeight()) {
+                            imagePressed = true;
+                            result = true;
+                        }
+                    }
                 }
                 if (result) {
                     startCheckLongPress();
@@ -198,9 +232,32 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                     imagePressed = false;
                     invalidate();
                 } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
-                    if (!photoImage.isInsideImage(x, y)) {
-                        imagePressed = false;
-                        invalidate();
+                    if (currentMessageObject.type == 9) {
+                        if (!(x >= photoImage.getImageX() && x <= photoImage.getImageX() + backgroundWidth - AndroidUtilities.dp(50) && y >= photoImage.getImageY() && y <= photoImage.getImageY() + photoImage.getImageHeight())) {
+                            imagePressed = false;
+                            invalidate();
+                        }
+                    } else {
+                        if (!photoImage.isInsideImage(x, y)) {
+                            imagePressed = false;
+                            invalidate();
+                        }
+                    }
+                }
+            } else if (otherPressed) {
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    otherPressed = false;
+                    playSoundEffect(SoundEffectConstants.CLICK);
+                    if (mediaDelegate != null) {
+                        mediaDelegate.didPressedOther(this);
+                    }
+                } else if (event.getAction() == MotionEvent.ACTION_CANCEL) {
+                    otherPressed = false;
+                } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
+                    if (currentMessageObject.type == 9) {
+                        if (!(x >= photoImage.getImageX() + backgroundWidth - AndroidUtilities.dp(50) && x <= photoImage.getImageX() + backgroundWidth && y >= photoImage.getImageY() && y <= photoImage.getImageY() + photoImage.getImageHeight())) {
+                            otherPressed = false;
+                        }
                     }
                 }
             }
@@ -264,6 +321,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                 FileLoader.getInstance().loadFile(currentMessageObject.messageOwner.media.video);
             }
             progressVisible = true;
+            startAnimation();
             buttonState = 1;
             invalidate();
         } else if (buttonState == 1) {
@@ -284,6 +342,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                     FileLoader.getInstance().cancelLoadFile(currentMessageObject.messageOwner.media.video);
                 }
                 progressVisible = false;
+                stopAnimation();
                 buttonState = 0;
                 invalidate();
             }
@@ -317,9 +376,8 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             }
         } else if (currentPhotoObject == null) {
             return true;
-        } else if (currentPhotoObject != null && photoNotSet) {
-            String fileName = FileLoader.getAttachFileName(currentPhotoObject.photoOwner);
-            File cacheFile = new File(AndroidUtilities.getCacheDir(), fileName);
+        } else if (currentMessageObject != null && photoNotSet) {
+            File cacheFile = FileLoader.getPathToMessage(currentMessageObject.messageOwner);
             if (cacheFile.exists()) {
                 return true;
             }
@@ -346,7 +404,12 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                 if (name == null || name.length() == 0) {
                     name = LocaleController.getString("AttachDocument", R.string.AttachDocument);
                 }
-                int maxWidth = Math.min(AndroidUtilities.displaySize.x, AndroidUtilities.displaySize.y) - AndroidUtilities.dp(122 + 86 + 24);
+                int maxWidth;
+                if (AndroidUtilities.isTablet()) {
+                    maxWidth = AndroidUtilities.getMinTabletSide() - AndroidUtilities.dp(122 + 86 + 24);
+                } else {
+                    maxWidth = Math.min(AndroidUtilities.displaySize.x, AndroidUtilities.displaySize.y) - AndroidUtilities.dp(122 + 86 + 24);
+                }
                 if (currentNameString == null || !currentNameString.equals(name)) {
                     currentNameString = name;
                     nameWidth = Math.min(maxWidth, (int) Math.ceil(namePaint.measureText(currentNameString)));
@@ -431,14 +494,14 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             if (messageObject.type == 9) {
                 photoWidth = AndroidUtilities.dp(86);
                 photoHeight = AndroidUtilities.dp(86);
-                backgroundWidth = photoWidth + Math.max(nameWidth, infoWidth) + AndroidUtilities.dp(40);
+                backgroundWidth = photoWidth + Math.max(nameWidth, infoWidth) + AndroidUtilities.dp(68);
                 currentPhotoObject = PhotoObject.getClosestImageWithSize(messageObject.photoThumbs, 800, 800);
                 if (currentPhotoObject != null) {
                     if (currentPhotoObject.image != null) {
                         photoImage.setImageBitmap(currentPhotoObject.image);
                     } else {
                         currentPhotoFilter = String.format(Locale.US, "%d_%d_b", photoWidth, photoHeight);
-                        photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, null, currentPhotoObject.photoOwner.size);
+                        photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, null, 0);
                     }
                 } else {
                     photoImage.setImageBitmap((BitmapDrawable)null);
@@ -453,7 +516,11 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                 currentUrl = String.format(Locale.US, "https://maps.googleapis.com/maps/api/staticmap?center=%f,%f&zoom=13&size=100x100&maptype=roadmap&scale=%d&markers=color:red|size:big|%f,%f&sensor=false", lat, lon, Math.min(2, (int)Math.ceil(AndroidUtilities.density)), lat, lon);
                 photoImage.setImage(currentUrl, null, messageObject.isOut() ? placeholderOutDrawable : placeholderInDrawable);
             } else {
-                photoWidth = (int) (Math.min(AndroidUtilities.displaySize.x, AndroidUtilities.displaySize.y) * 0.7f);
+                if (AndroidUtilities.isTablet()) {
+                    photoWidth = (int) (AndroidUtilities.getMinTabletSide() * 0.7f);
+                } else {
+                    photoWidth = (int) (Math.min(AndroidUtilities.displaySize.x, AndroidUtilities.displaySize.y) * 0.7f);
+                }
                 photoHeight = photoWidth + AndroidUtilities.dp(100);
 
                 if (photoWidth > 800) {
@@ -465,6 +532,10 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
 
                 currentPhotoObject = PhotoObject.getClosestImageWithSize(messageObject.photoThumbs, 800, 800);
                 if (currentPhotoObject != null) {
+                    boolean noSize = false;
+                    if (currentMessageObject.type == 3 || currentMessageObject.type == 8) {
+                        noSize = true;
+                    }
                     float scale = (float) currentPhotoObject.photoOwner.w / (float) photoWidth;
 
                     int w = (int) (currentPhotoObject.photoOwner.w / scale);
@@ -510,7 +581,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                         boolean photoExist = true;
                         String fileName = FileLoader.getAttachFileName(currentPhotoObject.photoOwner);
                         if (messageObject.type == 1) {
-                            File cacheFile = new File(AndroidUtilities.getCacheDir(), fileName);
+                            File cacheFile = FileLoader.getPathToMessage(currentMessageObject.messageOwner);
                             if (!cacheFile.exists()) {
                                 photoExist = false;
                             } else {
@@ -519,9 +590,9 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                         }
                         if (photoExist || MediaController.getInstance().canDownloadMedia(MediaController.AUTODOWNLOAD_MASK_PHOTO)) {
                             if (messageObject.imagePreview != null) {
-                                photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, new BitmapDrawable(messageObject.imagePreview), currentPhotoObject.photoOwner.size);
+                                photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, new BitmapDrawable(messageObject.imagePreview), noSize ? 0 : currentPhotoObject.photoOwner.size);
                             } else {
-                                photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, messageObject.isOut() ? placeholderOutDrawable : placeholderInDrawable, currentPhotoObject.photoOwner.size);
+                                photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, messageObject.isOut() ? placeholderOutDrawable : placeholderInDrawable, noSize ? 0 : currentPhotoObject.photoOwner.size);
                             }
                         } else {
                             photoNotSet = true;
@@ -554,7 +625,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                 return;
             }
             fileName = FileLoader.getAttachFileName(currentPhotoObject.photoOwner);
-            cacheFile = new File(AndroidUtilities.getCacheDir(), fileName);
+            cacheFile = FileLoader.getPathToMessage(currentMessageObject.messageOwner);
         } else if (currentMessageObject.type == 8 || currentMessageObject.type == 3 || currentMessageObject.type == 9) {
             if (currentMessageObject.messageOwner.attachPath != null && currentMessageObject.messageOwner.attachPath.length() != 0) {
                 File f = new File(currentMessageObject.messageOwner.attachPath);
@@ -565,7 +636,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             }
             if (fileName == null) {
                 fileName = currentMessageObject.getFileName();
-                cacheFile = new File(AndroidUtilities.getCacheDir(), fileName);
+                cacheFile = FileLoader.getPathToMessage(currentMessageObject.messageOwner);
             }
         }
         if (fileName == null) {
@@ -575,13 +646,10 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             if (currentMessageObject.messageOwner.attachPath != null) {
                 MediaController.getInstance().addLoadingFileObserver(currentMessageObject.messageOwner.attachPath, this);
                 progressVisible = true;
+                startAnimation();
                 buttonState = 1;
                 Float progress = FileLoader.getInstance().getFileProgress(currentMessageObject.messageOwner.attachPath);
-                if (progress != null) {
-                    progressView.setProgress(progress);
-                } else {
-                    progressView.setProgress(0);
-                }
+                setProgress(progress != null ? progress : 0, false);
                 invalidate();
             }
         } else {
@@ -597,25 +665,25 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                     if (cancelLoading || currentMessageObject.type != 1 || !MediaController.getInstance().canDownloadMedia(MediaController.AUTODOWNLOAD_MASK_PHOTO)) {
                         buttonState = 0;
                         progressVisible = false;
+                        stopAnimation();
                     } else {
                         buttonState = 1;
                         progressVisible = true;
+                        startAnimation();
                     }
-                    progressView.setProgress(0);
+                    setProgress(0, false);
                 } else {
                     buttonState = 1;
                     progressVisible = true;
+                    startAnimation();
                     Float progress = FileLoader.getInstance().getFileProgress(fileName);
-                    if (progress != null) {
-                        progressView.setProgress(progress);
-                    } else {
-                        progressView.setProgress(0);
-                    }
+                    setProgress(progress != null ? progress : 0, false);
                 }
                 invalidate();
             } else {
                 MediaController.getInstance().removeLoadingFileObserver(this);
                 progressVisible = false;
+                stopAnimation();
                 if (currentMessageObject.type == 8 && (gifDrawable == null || gifDrawable != null && !gifDrawable.isRunning())) {
                     buttonState = 2;
                 } else if (currentMessageObject.type == 3) {
@@ -626,6 +694,54 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                 invalidate();
             }
         }
+    }
+
+    private void updateAnimation() {
+        long newTime = System.currentTimeMillis();
+        long dt = newTime - lastUpdateTime;
+        lastUpdateTime = newTime;
+
+        radOffset += 360 * dt / 3000.0f;
+        float progressDiff = currentProgress - animationProgressStart;
+        if (progressDiff > 0) {
+            currentProgressTime += dt;
+            if (currentProgressTime >= 300) {
+                animatedProgressValue = currentProgress;
+                animationProgressStart = currentProgress;
+                currentProgressTime = 0;
+            } else {
+                animatedProgressValue = animationProgressStart + progressDiff * decelerateInterpolator.getInterpolation(currentProgressTime / 300.0f);
+            }
+        }
+
+        invalidateProgress();
+    }
+
+    private void startAnimation() {
+        lastUpdateTime = System.currentTimeMillis();
+        animationStarted = true;
+        invalidateProgress();
+    }
+
+    private void setProgress(float value, boolean animated) {
+        if (!animated) {
+            animatedProgressValue = value;
+            animationProgressStart = value;
+        } else {
+            animationProgressStart = animatedProgressValue;
+        }
+        currentProgress = value;
+        currentProgressTime = 0;
+    }
+
+    private void invalidateProgress() {
+        int offset = AndroidUtilities.dp(1);
+        invalidate((int)progressRect.left - offset, (int)progressRect.top - offset, (int)progressRect.right + offset * 2, (int)progressRect.bottom + offset * 2);
+    }
+
+    private void stopAnimation() {
+        radOffset = 0;
+        animationStarted = false;
     }
 
     @Override
@@ -655,7 +771,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
         int size = AndroidUtilities.dp(44);
         buttonX = (int)(x + (photoWidth - size) / 2.0f);
         buttonY = (int)(AndroidUtilities.dp(7) + (photoHeight - size) / 2.0f);
-        progressView.rect.set(buttonX + AndroidUtilities.dp(1), buttonY + AndroidUtilities.dp(1), buttonX + AndroidUtilities.dp(43), buttonY + AndroidUtilities.dp(43));
+        progressRect.set(buttonX + AndroidUtilities.dp(1), buttonY + AndroidUtilities.dp(1), buttonX + AndroidUtilities.dp(43), buttonY + AndroidUtilities.dp(43));
     }
 
     @Override
@@ -672,14 +788,21 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             drawTime = photoImage.getVisible();
         }
 
+
         if (currentMessageObject.type == 9) {
+            Drawable menuDrawable = null;
             if (currentMessageObject.isOut()) {
                 infoPaint.setColor(0xff75b166);
                 docBackPaint.setColor(0xffd0f3b3);
+                menuDrawable = docMenuOutDrawable;
             } else {
                 infoPaint.setColor(0xffa1adbb);
                 docBackPaint.setColor(0xffebf0f5);
+                menuDrawable = docMenuInDrawable;
             }
+
+            setDrawableBounds(menuDrawable, photoImage.getImageX() + backgroundWidth - AndroidUtilities.dp(50), AndroidUtilities.dp(10));
+            menuDrawable.draw(canvas);
 
             if (!imageDrawn) {
                 canvas.drawRect(photoImage.getImageX(), photoImage.getImageY(), photoImage.getImageX() + photoImage.getImageWidth(), photoImage.getImageY() + photoImage.getImageHeight(), docBackPaint);
@@ -690,15 +813,16 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                     drawable.draw(canvas);
                 }
                 if (currentMessageObject.isOut()) {
-                    progressView.setColor(0xff81bd72);
+                    progressPaint.setColor(0xff81bd72);
+
                 } else {
-                    progressView.setColor(0xffadbdcc);
+                    progressPaint.setColor(0xffadbdcc);
                 }
             } else {
-                progressView.setColor(0xffffffff);
+                progressPaint.setColor(0xffffffff);
             }
         } else {
-            progressView.setColor(0xffffffff);
+            progressPaint.setColor(0xffffffff);
         }
 
         if (buttonState >= 0 && buttonState < 4) {
@@ -713,7 +837,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
         }
 
         if (progressVisible) {
-            progressView.draw(canvas);
+            canvas.drawArc(progressRect, -90 + radOffset, Math.max(4, 360 * animatedProgressValue), false, progressPaint);
         }
 
         if (nameLayout != null) {
@@ -758,6 +882,10 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             }
             canvas.restore();
         }
+
+        if (animationStarted) {
+            updateAnimation();
+        }
     }
 
     @Override
@@ -779,17 +907,17 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
     @Override
     public void onProgressDownload(String fileName, float progress) {
         progressVisible = true;
-        progressView.setProgress(progress);
+        setProgress(progress, true);
         if (buttonState != 1) {
             updateButtonState();
         }
-        invalidate();
+        invalidateProgress();
     }
 
     @Override
     public void onProgressUpload(String fileName, float progress, boolean isEncrypted) {
-        progressView.setProgress(progress);
-        invalidate();
+        setProgress(progress, true);
+        invalidateProgress();
     }
 
     @Override

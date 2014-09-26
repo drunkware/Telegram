@@ -40,6 +40,7 @@ import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.android.MediaController;
 import org.telegram.messenger.BuildVars;
 import org.telegram.android.LocaleController;
+import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.SerializedData;
 import org.telegram.messenger.TLClassStore;
 import org.telegram.messenger.TLObject;
@@ -52,9 +53,7 @@ import org.telegram.android.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.RPCRequest;
 import org.telegram.messenger.UserConfig;
-import org.telegram.messenger.Utilities;
 import org.telegram.android.MessageObject;
-import org.telegram.android.PhotoObject;
 import org.telegram.ui.Adapters.BaseFragmentAdapter;
 import org.telegram.ui.Views.ActionBar.ActionBarLayer;
 import org.telegram.ui.Views.AvatarUpdater;
@@ -144,8 +143,8 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                             }
                             TLRPC.TL_photos_photo photo = (TLRPC.TL_photos_photo)response;
                             ArrayList<TLRPC.PhotoSize> sizes = photo.photo.sizes;
-                            TLRPC.PhotoSize smallSize = PhotoObject.getClosestPhotoSizeWithSize(sizes, 100, 100);
-                            TLRPC.PhotoSize bigSize = PhotoObject.getClosestPhotoSizeWithSize(sizes, 1000, 1000);
+                            TLRPC.PhotoSize smallSize = FileLoader.getClosestPhotoSizeWithSize(sizes, 100, 100);
+                            TLRPC.PhotoSize bigSize = FileLoader.getClosestPhotoSizeWithSize(sizes, 1000, 1000);
                             user.photo = new TLRPC.TL_userProfilePhoto();
                             user.photo.photo_id = photo.photo.id;
                             if (smallSize != null) {
@@ -828,7 +827,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                     user = UserConfig.getCurrentUser();
                 }
                 if (user != null) {
-                    textView.setText(Utilities.formatName(user.first_name, user.last_name));
+                    textView.setText(ContactsController.formatName(user.first_name, user.last_name));
                     BackupImageView avatarImage = (BackupImageView)view.findViewById(R.id.settings_avatar_image);
                     avatarImage.processDetach = false;
                     TLRPC.FileLocation photo = null;
@@ -837,7 +836,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                         photo = user.photo.photo_small;
                         photoBig = user.photo.photo_big;
                     }
-                    avatarImage.setImage(photo, "50_50", Utilities.getUserAvatarForId(user.id));
+                    avatarImage.setImage(photo, "50_50", AndroidUtilities.getUserAvatarForId(user.id));
                     avatarImage.imageReceiver.setVisible(!PhotoViewer.getInstance().isShowingImage(photoBig), false);
                 }
                 return view;
@@ -999,7 +998,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 View divider = view.findViewById(R.id.settings_row_divider);
                 if (i == textSizeRow) {
                     SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
-                    int size = preferences.getInt("fons_size", 16);
+                    int size = preferences.getInt("fons_size", AndroidUtilities.isTablet() ? 18 : 16);
                     detailTextView.setText(String.format("%d", size));
                     textView.setText(LocaleController.getString("TextSize", R.string.TextSize));
                     divider.setVisibility(View.VISIBLE);

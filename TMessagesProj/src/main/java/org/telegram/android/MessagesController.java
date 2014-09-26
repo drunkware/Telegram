@@ -143,7 +143,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
         preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
         maxGroupCount = preferences.getInt("maxGroupCount", 200);
         maxBroadcastCount = preferences.getInt("maxBroadcastCount", 100);
-        fontSize = preferences.getInt("fons_size", 16);
+        fontSize = preferences.getInt("fons_size", AndroidUtilities.isTablet() ? 18 : 16);
     }
 
     public void updateConfig(final TLRPC.TL_config config) {
@@ -228,8 +228,8 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                             }
                             TLRPC.TL_photos_photo photo = (TLRPC.TL_photos_photo) response;
                             ArrayList<TLRPC.PhotoSize> sizes = photo.photo.sizes;
-                            TLRPC.PhotoSize smallSize = PhotoObject.getClosestPhotoSizeWithSize(sizes, 100, 100);
-                            TLRPC.PhotoSize bigSize = PhotoObject.getClosestPhotoSizeWithSize(sizes, 1000, 1000);
+                            TLRPC.PhotoSize smallSize = FileLoader.getClosestPhotoSizeWithSize(sizes, 100, 100);
+                            TLRPC.PhotoSize bigSize = FileLoader.getClosestPhotoSizeWithSize(sizes, 1000, 1000);
                             user.photo = new TLRPC.TL_userProfilePhoto();
                             user.photo.photo_id = photo.photo.id;
                             if (smallSize != null) {
@@ -908,7 +908,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
 
     public void uploadAndApplyUserAvatar(TLRPC.PhotoSize bigPhoto) {
         if (bigPhoto != null) {
-            uploadingAvatar = AndroidUtilities.getCacheDir() + "/" + bigPhoto.location.volume_id + "_" + bigPhoto.location.local_id + ".jpg";
+            uploadingAvatar = FileLoader.getInstance().getDirectory(FileLoader.MEDIA_DIR_CACHE) + "/" + bigPhoto.location.volume_id + "_" + bigPhoto.location.local_id + ".jpg";
             FileLoader.getInstance().uploadFile(uploadingAvatar, false, true);
         }
     }
@@ -1175,7 +1175,7 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                         if (label.length() != 0) {
                             label += ", ";
                         }
-                        label += Utilities.formatName(user.first_name, user.last_name);
+                        label += ContactsController.formatName(user.first_name, user.last_name);
                         count++;
                     }
                     if (count == 2) {
@@ -1652,11 +1652,6 @@ public class MessagesController implements NotificationCenter.NotificationCenter
         TLRPC.PhotoSize size = ImageLoader.scaleAndSaveImage(bitmap, 90, 90, 55, true);
         if (size != null) {
             size.type = "s";
-            sizes.add(size);
-        }
-        size = ImageLoader.scaleAndSaveImage(bitmap, 320, 320, 80, false);
-        if (size != null) {
-            size.type = "m";
             sizes.add(size);
         }
         size = ImageLoader.scaleAndSaveImage(bitmap, 800, 800, 80, false);
@@ -3462,9 +3457,23 @@ public class MessagesController implements NotificationCenter.NotificationCenter
                 changed = true;
             }
         } else {
+            boolean change = false;
             if (dialog.top_message > 0 && lastMessage.messageOwner.id > 0 && lastMessage.messageOwner.id > dialog.top_message ||
-                    dialog.top_message < 0 && lastMessage.messageOwner.id < 0 && lastMessage.messageOwner.id < dialog.top_message ||
-                    dialog.last_message_date < lastMessage.messageOwner.date) {
+                    dialog.top_message < 0 && lastMessage.messageOwner.id < 0 && lastMessage.messageOwner.id < dialog.top_message) {
+                change = true;
+            } else {
+                MessageObject currentDialogMessage = dialogMessage.get(dialog.top_message);
+                if (currentDialogMessage != null) {
+                    if (currentDialogMessage.messageOwner.send_state == MessageObject.MESSAGE_SEND_STATE_SENDING && lastMessage.messageOwner.send_state == MessageObject.MESSAGE_SEND_STATE_SENDING) {
+                        change = true;
+                    } else if (dialog.last_message_date < lastMessage.messageOwner.date || dialog.last_message_date == lastMessage.messageOwner.date && lastMessage.messageOwner.send_state == MessageObject.MESSAGE_SEND_STATE_SENDING) {
+                        change = true;
+                    }
+                } else {
+                    change = true;
+                }
+            }
+            if (change) {
                 dialogMessage.remove(dialog.top_message);
                 dialog.top_message = lastMessage.messageOwner.id;
                 if (!isBroadcast) {
