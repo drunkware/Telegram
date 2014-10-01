@@ -437,7 +437,7 @@ public class MessageObject {
         } else if (messageOwner.media instanceof TLRPC.TL_messageMediaPhoto) {
             ArrayList<TLRPC.PhotoSize> sizes = messageOwner.media.photo.sizes;
             if (sizes.size() > 0) {
-                TLRPC.PhotoSize sizeFull = FileLoader.getClosestPhotoSizeWithSize(sizes, 800, 800);
+                TLRPC.PhotoSize sizeFull = FileLoader.getClosestPhotoSizeWithSize(sizes, AndroidUtilities.getPhotoSize(), AndroidUtilities.getPhotoSize());
                 if (sizeFull != null) {
                     return FileLoader.getAttachFileName(sizeFull);
                 }
@@ -642,5 +642,17 @@ public class MessageObject {
                 return messageOwner.from_id;
             }
         }
+    }
+
+    public boolean isSending() {
+        return messageOwner.send_state == MESSAGE_SEND_STATE_SENDING;
+    }
+
+    public boolean isSendError() {
+        return messageOwner.send_state == MESSAGE_SEND_STATE_SEND_ERROR;
+    }
+
+    public boolean isSent() {
+        return messageOwner.send_state == MESSAGE_SEND_STATE_SENT;
     }
 }

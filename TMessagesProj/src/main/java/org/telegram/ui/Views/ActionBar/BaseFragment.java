@@ -139,29 +139,29 @@ public class BaseFragment {
 
     }
 
-    public void presentFragment(BaseFragment fragment) {
-        if (parentLayout == null) {
-            return;
-        }
-        parentLayout.presentFragment(fragment);
+    public boolean presentFragment(BaseFragment fragment) {
+        return parentLayout != null && parentLayout.presentFragment(fragment);
     }
 
-    public void presentFragment(BaseFragment fragment, boolean removeLast) {
-        if (parentLayout == null) {
-            return;
-        }
-        parentLayout.presentFragment(fragment, removeLast);
+    public boolean presentFragment(BaseFragment fragment, boolean removeLast) {
+        return parentLayout != null && parentLayout.presentFragment(fragment, removeLast);
     }
 
-    public void presentFragment(BaseFragment fragment, boolean removeLast, boolean forceWithoutAnimation) {
-        if (parentLayout == null) {
-            return;
-        }
-        parentLayout.presentFragment(fragment, removeLast, forceWithoutAnimation);
+    public boolean presentFragment(BaseFragment fragment, boolean removeLast, boolean forceWithoutAnimation) {
+        return parentLayout != null && parentLayout.presentFragment(fragment, removeLast, forceWithoutAnimation, true);
     }
 
     public Activity getParentActivity() {
-        return parentLayout.parentActivity;
+        if (parentLayout != null) {
+            return parentLayout.parentActivity;
+        }
+        return null;
+    }
+
+    public void startActivityForResult(final Intent intent, final int requestCode) {
+        if (parentLayout != null) {
+            parentLayout.startActivityForResult(intent, requestCode);
+        }
     }
 
     public void showActionBar() {
