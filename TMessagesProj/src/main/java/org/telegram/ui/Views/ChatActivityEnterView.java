@@ -519,7 +519,7 @@ public class ChatActivityEnterView implements NotificationCenter.NotificationCen
         });
         emojiPopup = new PopupWindow(emojiView);
 
-        /*Utry {
+        /*try {
             Method method = emojiPopup.getClass().getMethod("setWindowLayoutType", int.class);
             if (method != null) {
                 method.invoke(emojiPopup, WindowManager.LayoutParams.LAST_SUB_WINDOW);
@@ -554,7 +554,11 @@ public class ChatActivityEnterView implements NotificationCenter.NotificationCen
                     @Override
                     public void run() {
                         if (messsageEditText != null) {
-                            messsageEditText.requestFocus();
+                            try {
+                                messsageEditText.requestFocus();
+                            } catch (Exception e) {
+                                FileLog.e("tmessages", e);
+                            }
                         }
                     }
                 }, 600);
