@@ -144,7 +144,7 @@ public class MediaController implements NotificationCenter.NotificationCenterDel
         }
     }
 
-    private final static String MIME_TYPE = "video/avc";
+    public final static String MIME_TYPE = "video/avc";
     private final static int PROCESSOR_TYPE_OTHER = 0;
     private final static int PROCESSOR_TYPE_QCOM = 1;
     private final static int PROCESSOR_TYPE_INTEL = 2;
@@ -196,7 +196,7 @@ public class MediaController implements NotificationCenter.NotificationCenterDel
     private long lastPlayPcm;
     private int ignoreFirstProgress = 0;
     private Timer progressTimer = null;
-    private final Integer progressTimerSync = 1;
+    private final Object progressTimerSync = new Object();
 
     private AudioRecord audioRecorder = null;
     private TLRPC.TL_audio recordingAudio = null;
@@ -208,10 +208,10 @@ public class MediaController implements NotificationCenter.NotificationCenterDel
     private DispatchQueue playerQueue;
     private ArrayList<AudioBuffer> usedPlayerBuffers = new ArrayList<AudioBuffer>();
     private ArrayList<AudioBuffer> freePlayerBuffers = new ArrayList<AudioBuffer>();
-    private final Integer playerSync = 2;
-    private final Integer playerObjectSync = 3;
+    private final Object playerSync = new Object();
+    private final Object playerObjectSync = new Object();
 
-    private final Integer sync = 1;
+    private final Object sync = new Object();
 
     private ArrayList<ByteBuffer> recordBuffers = new ArrayList<ByteBuffer>();
     private ByteBuffer fileBuffer;
@@ -1799,10 +1799,10 @@ public class MediaController implements NotificationCenter.NotificationCenterDel
 
     public void checkSaveToGalleryFiles() {
         try {
-            File telegramPath = new File(Environment.getExternalStorageDirectory(), LocaleController.getString("AppName", R.string.AppName));
-            File imagePath = new File(telegramPath, LocaleController.getString("AppName", R.string.AppName) + " Images");
+            File telegramPath = new File(Environment.getExternalStorageDirectory(), "Telegram");
+            File imagePath = new File(telegramPath, "Telegram Images");
             imagePath.mkdir();
-            File videoPath = new File(telegramPath, LocaleController.getString("AppName", R.string.AppName) + " Video");
+            File videoPath = new File(telegramPath, "Telegram Video");
             videoPath.mkdir();
 
             if (saveToGallery) {
@@ -1946,7 +1946,7 @@ public class MediaController implements NotificationCenter.NotificationCenterDel
         }
     }
 
-    private static MediaCodecInfo selectCodec(String mimeType) {
+    public static MediaCodecInfo selectCodec(String mimeType) {
         int numCodecs = MediaCodecList.getCodecCount();
         MediaCodecInfo lastCodecInfo = null;
         for (int i = 0; i < numCodecs; i++) {
@@ -1982,7 +1982,7 @@ public class MediaController implements NotificationCenter.NotificationCenterDel
         }
     }
 
-    private static int selectColorFormat(MediaCodecInfo codecInfo, String mimeType) {
+    public static int selectColorFormat(MediaCodecInfo codecInfo, String mimeType) {
         MediaCodecInfo.CodecCapabilities capabilities = codecInfo.getCapabilitiesForType(mimeType);
         int lastColorFormat = 0;
         for (int i = 0; i < capabilities.colorFormats.length; i++) {

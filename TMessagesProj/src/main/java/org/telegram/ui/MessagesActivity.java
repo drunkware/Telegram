@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -51,8 +52,9 @@ public class MessagesActivity extends BaseFragment implements NotificationCenter
     private MessagesAdapter messagesListViewAdapter;
     private TextView searchEmptyView;
     private View progressView;
-    private View empryView;
+    private View emptyView;
     private String selectAlertString;
+    private String selectAlertStringGroup;
     private boolean serverOnly = false;
 
     private static boolean dialogsLoaded = false;
@@ -101,6 +103,7 @@ public class MessagesActivity extends BaseFragment implements NotificationCenter
             onlySelect = arguments.getBoolean("onlySelect", false);
             serverOnly = arguments.getBoolean("serverOnly", false);
             selectAlertString = arguments.getString("selectAlertString");
+            selectAlertStringGroup = arguments.getString("selectAlertStringGroup");
         }
         if (!dialogsLoaded) {
             MessagesController.getInstance().loadDialogs(0, 0, 100, true);
@@ -134,8 +137,8 @@ public class MessagesActivity extends BaseFragment implements NotificationCenter
                     if (messagesListView != null) {
                         messagesListView.setEmptyView(searchEmptyView);
                     }
-                    if (empryView != null) {
-                        empryView.setVisibility(View.GONE);
+                    if (emptyView != null) {
+                        emptyView.setVisibility(View.GONE);
                     }
                 }
 
@@ -145,7 +148,7 @@ public class MessagesActivity extends BaseFragment implements NotificationCenter
                     searching = false;
                     searchWas = false;
                     if (messagesListView != null) {
-                        messagesListView.setEmptyView(empryView);
+                        messagesListView.setEmptyView(emptyView);
                         searchEmptyView.setVisibility(View.GONE);
                     }
                     if (messagesListViewAdapter != null) {
@@ -164,7 +167,7 @@ public class MessagesActivity extends BaseFragment implements NotificationCenter
                         }
                         if (searchEmptyView != null) {
                             messagesListView.setEmptyView(searchEmptyView);
-                            empryView.setVisibility(View.GONE);
+                            emptyView.setVisibility(View.GONE);
                         }
                     }
                 }
@@ -236,8 +239,20 @@ public class MessagesActivity extends BaseFragment implements NotificationCenter
             progressView = fragmentView.findViewById(R.id.progressLayout);
             messagesListViewAdapter.notifyDataSetChanged();
             searchEmptyView = (TextView)fragmentView.findViewById(R.id.searchEmptyView);
+            searchEmptyView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return true;
+                }
+            });
             searchEmptyView.setText(LocaleController.getString("NoResult", R.string.NoResult));
-            empryView = fragmentView.findViewById(R.id.list_empty_view);
+            emptyView = fragmentView.findViewById(R.id.list_empty_view);
+            emptyView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return true;
+                }
+            });
             TextView textView = (TextView)fragmentView.findViewById(R.id.list_empty_view_text1);
             textView.setText(LocaleController.getString("NoChats", R.string.NoChats));
             textView = (TextView)fragmentView.findViewById(R.id.list_empty_view_text2);
@@ -246,14 +261,14 @@ public class MessagesActivity extends BaseFragment implements NotificationCenter
             if (MessagesController.getInstance().loadingDialogs && MessagesController.getInstance().dialogs.isEmpty()) {
                 messagesListView.setEmptyView(null);
                 searchEmptyView.setVisibility(View.GONE);
-                empryView.setVisibility(View.GONE);
+                emptyView.setVisibility(View.GONE);
                 progressView.setVisibility(View.VISIBLE);
             } else {
                 if (searching && searchWas) {
                     messagesListView.setEmptyView(searchEmptyView);
-                    empryView.setVisibility(View.GONE);
+                    emptyView.setVisibility(View.GONE);
                 } else {
-                    messagesListView.setEmptyView(empryView);
+                    messagesListView.setEmptyView(emptyView);
                     searchEmptyView.setVisibility(View.GONE);
                 }
                 progressView.setVisibility(View.GONE);
@@ -458,15 +473,15 @@ public class MessagesActivity extends BaseFragment implements NotificationCenter
                         messagesListView.setEmptyView(null);
                     }
                     searchEmptyView.setVisibility(View.GONE);
-                    empryView.setVisibility(View.GONE);
+                    emptyView.setVisibility(View.GONE);
                     progressView.setVisibility(View.VISIBLE);
                 } else {
                     if (messagesListView.getEmptyView() == null) {
                         if (searching && searchWas) {
                             messagesListView.setEmptyView(searchEmptyView);
-                            empryView.setVisibility(View.GONE);
+                            emptyView.setVisibility(View.GONE);
                         } else {
-                            messagesListView.setEmptyView(empryView);
+                            messagesListView.setEmptyView(emptyView);
                             searchEmptyView.setVisibility(View.GONE);
                         }
                     }
@@ -538,7 +553,7 @@ public class MessagesActivity extends BaseFragment implements NotificationCenter
     }
 
     private void didSelectResult(final long dialog_id, boolean useAlert, final boolean param) {
-        if (useAlert && selectAlertString != null) {
+        if (useAlert && selectAlertString != null && selectAlertStringGroup != null) {
             if (getParentActivity() == null) {
                 return;
             }
@@ -552,7 +567,7 @@ public class MessagesActivity extends BaseFragment implements NotificationCenter
                     if (chat == null) {
                         return;
                     }
-                    builder.setMessage(LocaleController.formatStringSimple(selectAlertString, chat.title));
+                    builder.setMessage(LocaleController.formatStringSimple(selectAlertStringGroup, chat.title));
                 } else {
                     if (lower_part > 0) {
                         TLRPC.User user = MessagesController.getInstance().getUser(lower_part);
@@ -565,7 +580,7 @@ public class MessagesActivity extends BaseFragment implements NotificationCenter
                         if (chat == null) {
                             return;
                         }
-                        builder.setMessage(LocaleController.formatStringSimple(selectAlertString, chat.title));
+                        builder.setMessage(LocaleController.formatStringSimple(selectAlertStringGroup, chat.title));
                     }
                 }
             } else {

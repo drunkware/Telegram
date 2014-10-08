@@ -17,7 +17,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.provider.ContactsContract;
-import android.provider.Settings;
 import android.util.SparseArray;
 
 import org.telegram.PhoneFormat.PhoneFormat;
@@ -41,15 +40,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ContactsController {
     private Account currentAccount;
     private boolean loadingContacts = false;
-    private static final Integer loadContactsSync = 1;
+    private static final Object loadContactsSync = new Object();
     private boolean ignoreChanges = false;
     private boolean contactsSyncInProgress = false;
-    private final Integer observerLock = 1;
+    private final Object observerLock = new Object();
     public boolean contactsLoaded = false;
     private boolean contactsBookLoaded = false;
     private String lastContactsVersions = "";
     private ArrayList<Integer> delayedContactsUpdate = new ArrayList<Integer>();
-    public int nameDisplayOrder = 1;
 
     public static class Contact {
         public int id;
@@ -99,14 +97,6 @@ public class ContactsController {
             }
         }
         return localInstance;
-    }
-
-    public ContactsController() {
-        try {
-            nameDisplayOrder = Settings.System.getInt(ApplicationLoader.applicationContext.getContentResolver(), "android.contacts.DISPLAY_ORDER");
-        } catch (Exception e) {
-            //don't promt
-        }
     }
 
     public void cleanup() {
@@ -1576,7 +1566,7 @@ public class ContactsController {
 
     public static String formatName(String firstName, String lastName) {
         String result = null;
-        if (ContactsController.getInstance().nameDisplayOrder == 1) {
+        if (LocaleController.nameDisplayOrder == 1) {
             result = firstName;
             if (result == null || result.length() == 0) {
                 result = lastName;

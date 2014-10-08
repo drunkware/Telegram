@@ -140,6 +140,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
 
             progressPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             progressPaint.setStyle(Paint.Style.STROKE);
+            progressPaint.setStrokeCap(Paint.Cap.ROUND);
             progressPaint.setStrokeWidth(AndroidUtilities.dp(2));
 
             decelerateInterpolator = new DecelerateInterpolator();
@@ -313,9 +314,9 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
             cancelLoading = false;
             if (currentMessageObject.type == 1) {
                 if (currentMessageObject.imagePreview != null) {
-                    photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, new BitmapDrawable(currentMessageObject.imagePreview), currentPhotoObject.photoOwner.size);
+                    photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, new BitmapDrawable(currentMessageObject.imagePreview), currentPhotoObject.photoOwner.size, false);
                 } else {
-                    photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, currentMessageObject.isOut() ? placeholderOutDrawable : placeholderInDrawable, currentPhotoObject.photoOwner.size);
+                    photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, currentMessageObject.isOut() ? placeholderOutDrawable : placeholderInDrawable, currentPhotoObject.photoOwner.size, false);
                 }
             } else if (currentMessageObject.type == 8 || currentMessageObject.type == 9) {
                 FileLoader.getInstance().loadFile(currentMessageObject.messageOwner.media.document, true);
@@ -504,7 +505,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                         photoImage.setImageBitmap(currentPhotoObject.image);
                     } else {
                         currentPhotoFilter = String.format(Locale.US, "%d_%d_b", photoWidth, photoHeight);
-                        photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, null, 0);
+                        photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, null, 0, false);
                     }
                 } else {
                     photoImage.setImageBitmap((BitmapDrawable)null);
@@ -597,9 +598,9 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                         }
                         if (photoExist || MediaController.getInstance().canDownloadMedia(MediaController.AUTODOWNLOAD_MASK_PHOTO)) {
                             if (messageObject.imagePreview != null) {
-                                photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, new BitmapDrawable(messageObject.imagePreview), noSize ? 0 : currentPhotoObject.photoOwner.size);
+                                photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, new BitmapDrawable(messageObject.imagePreview), noSize ? 0 : currentPhotoObject.photoOwner.size, false);
                             } else {
-                                photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, messageObject.isOut() ? placeholderOutDrawable : placeholderInDrawable, noSize ? 0 : currentPhotoObject.photoOwner.size);
+                                photoImage.setImage(currentPhotoObject.photoOwner.location, currentPhotoFilter, messageObject.isOut() ? placeholderOutDrawable : placeholderInDrawable, noSize ? 0 : currentPhotoObject.photoOwner.size, false);
                             }
                         } else {
                             photoNotSet = true;
