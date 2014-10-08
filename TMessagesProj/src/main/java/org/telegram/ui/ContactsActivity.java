@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
@@ -39,7 +40,6 @@ import org.telegram.android.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.RPCRequest;
 import org.telegram.messenger.UserConfig;
-import org.telegram.messenger.Utilities;
 import org.telegram.ui.Adapters.ContactsActivityAdapter;
 import org.telegram.ui.Adapters.ContactsActivitySearchAdapter;
 import org.telegram.ui.Cells.ChatOrUserCell;
@@ -203,6 +203,12 @@ public class ContactsActivity extends BaseFragment implements NotificationCenter
 
             listView = (PinnedHeaderListView)fragmentView.findViewById(R.id.listView);
             listView.setEmptyView(emptyTextView);
+            emptyTextView.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    return true;
+                }
+            });
             listView.setVerticalScrollBarEnabled(false);
 
             listViewAdapter = new ContactsActivityAdapter(getParentActivity(), onlyUsers, usersAsSections, ignoreUsers);

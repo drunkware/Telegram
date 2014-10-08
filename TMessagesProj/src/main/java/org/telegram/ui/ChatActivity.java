@@ -9,6 +9,8 @@
 package org.telegram.ui;
 
 import android.animation.Animator;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -114,6 +116,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
     private View bottomOverlayChat;
     private TypingDotsDrawable typingDotsDrawable;
     private View emptyViewContainer;
+    private ArrayList<View> actionModeViews = new ArrayList<View>();
 
     private TextView bottomOverlayText;
 
@@ -552,6 +555,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         args.putBoolean("onlySelect", true);
                         args.putBoolean("serverOnly", true);
                         args.putString("selectAlertString", LocaleController.getString("ForwardMessagesTo", R.string.ForwardMessagesTo));
+                        args.putString("selectAlertStringGroup", LocaleController.getString("ForwardMessagesToGroup", R.string.ForwardMessagesToGroup));
                         MessagesActivity fragment = new MessagesActivity(args);
                         fragment.setDelegate(ChatActivity.this);
                         presentFragment(fragment);
@@ -581,8 +585,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             item.addSubItem(attach_location, LocaleController.getString("ChatLocation", R.string.ChatLocation), R.drawable.ic_attach_location);
             menuItem = item;
 
+            actionModeViews.clear();
+
             ActionBarMenu actionMode = actionBarLayer.createActionMode();
-            actionMode.addItem(-2, R.drawable.ic_ab_done_gray, R.drawable.bar_selector_mode);
+            actionModeViews.add(actionMode.addItem(-2, R.drawable.ic_ab_done_gray, R.drawable.bar_selector_mode));
 
             FrameLayout layout = new FrameLayout(actionMode.getContext());
             layout.setBackgroundColor(0xffe5e5e5);
@@ -594,6 +600,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             layoutParams.bottomMargin = AndroidUtilities.dp(12);
             layoutParams.gravity = Gravity.CENTER_VERTICAL;
             layout.setLayoutParams(layoutParams);
+            actionModeViews.add(layout);
 
             selectedMessagesCountTextView = new TextView(actionMode.getContext());
             selectedMessagesCountTextView.setTextSize(18);
@@ -617,13 +624,19 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             selectedMessagesCountTextView.setLayoutParams(layoutParams);
 
             if (currentEncryptedChat == null) {
+<<<<<<< HEAD
                 actionMode.addItem(quoteforward, R.drawable.ic_ab_fwd_quoteforward, R.drawable.bar_selector_mode);
                 actionMode.addItem(forward, R.drawable.ic_ab_fwd_forward, R.drawable.bar_selector_mode);
                 actionMode.addItem(copy, R.drawable.ic_ab_fwd_copy, R.drawable.bar_selector_mode);
                 actionMode.addItem(delete, R.drawable.ic_ab_fwd_delete, R.drawable.bar_selector_mode);
+=======
+                actionModeViews.add(actionMode.addItem(copy, R.drawable.ic_ab_fwd_copy, R.drawable.bar_selector_mode));
+                actionModeViews.add(actionMode.addItem(forward, R.drawable.ic_ab_fwd_forward, R.drawable.bar_selector_mode));
+                actionModeViews.add(actionMode.addItem(delete, R.drawable.ic_ab_fwd_delete, R.drawable.bar_selector_mode));
+>>>>>>> 43674c486f92415e669a102d0c403fc94cac2cd3
             } else {
-                actionMode.addItem(copy, R.drawable.ic_ab_fwd_copy, R.drawable.bar_selector_mode);
-                actionMode.addItem(delete, R.drawable.ic_ab_fwd_delete, R.drawable.bar_selector_mode);
+                actionModeViews.add(actionMode.addItem(copy, R.drawable.ic_ab_fwd_copy, R.drawable.bar_selector_mode));
+                actionModeViews.add(actionMode.addItem(delete, R.drawable.ic_ab_fwd_delete, R.drawable.bar_selector_mode));
             }
             actionMode.getItem(copy).setVisibility(selectedMessagesCanCopyIds.size() != 0 ? View.VISIBLE : View.GONE);
 
@@ -1278,8 +1291,8 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     if (info != null) {
                         count = info.participants.size();
                     }
-                    if (onlineCount > 0 && count != 0) {
-                        actionBarLayer.setSubtitle(String.format("%s, %d %s", LocaleController.formatPluralString("Members", count), onlineCount, LocaleController.getString("Online", R.string.Online)));
+                    if (onlineCount > 1 && count != 0) {
+                        actionBarLayer.setSubtitle(String.format("%s, %s", LocaleController.formatPluralString("Members", count), LocaleController.formatPluralString("Online", onlineCount)));
                     } else {
                         actionBarLayer.setSubtitle(LocaleController.formatPluralString("Members", count));
                     }
@@ -2902,6 +2915,21 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             return;
         }
         actionBarLayer.showActionMode();
+        if (Build.VERSION.SDK_INT >= 11) {
+            AnimatorSet animatorSet = new AnimatorSet();
+            ArrayList<Animator> animators = new ArrayList<Animator>();
+            for (int a = 0; a < actionModeViews.size(); a++) {
+                View view = actionModeViews.get(a);
+                if (a < 2) {
+                    animators.add(ObjectAnimator.ofFloat(view, "translationX", -AndroidUtilities.dp(56), 0));
+                } else {
+                    animators.add(ObjectAnimator.ofFloat(view, "scaleY", 0.1f, 1.0f));
+                }
+            }
+            animatorSet.playTogether(animators);
+            animatorSet.setDuration(250);
+            animatorSet.start();
+        }
         addToSelectedMessages(message);
         updateActionModeTitle();
         updateVisibleRows();
@@ -2936,6 +2964,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             args.putBoolean("onlySelect", true);
             args.putBoolean("serverOnly", true);
             args.putString("selectAlertString", LocaleController.getString("ForwardMessagesTo", R.string.ForwardMessagesTo));
+            args.putString("selectAlertStringGroup", LocaleController.getString("ForwardMessagesToGroup", R.string.ForwardMessagesToGroup));
             MessagesActivity fragment = new MessagesActivity(args);
             fragment.setDelegate(this);
             presentFragment(fragment);
