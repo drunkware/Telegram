@@ -23,6 +23,8 @@ import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.R;
@@ -32,6 +34,7 @@ import org.telegram.ui.ApplicationLoader;
 import org.telegram.ui.Views.NumberPicker;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.Hashtable;
 import java.util.Locale;
 
@@ -215,7 +218,7 @@ public class AndroidUtilities {
     }
 
     public static File getCacheDir() {
-        if (Environment.getExternalStorageState().startsWith(Environment.MEDIA_MOUNTED)) {
+        if (Environment.getExternalStorageState() == null || Environment.getExternalStorageState().startsWith(Environment.MEDIA_MOUNTED)) {
             try {
                 File file = ApplicationLoader.applicationContext.getExternalCacheDir();
                 if (file != null) {
@@ -416,13 +419,13 @@ public class AndroidUtilities {
         }
     }
 
-    public static AlertDialog.Builder buildTTLAlert(Context context, final TLRPC.EncryptedChat encryptedChat) {
+    public static AlertDialog.Builder buildTTLAlert(final Context context, final TLRPC.EncryptedChat encryptedChat) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(LocaleController.getString("MessageLifetime", R.string.MessageLifetime));
         final NumberPicker numberPicker = new NumberPicker(context);
         numberPicker.setMinValue(0);
         numberPicker.setMaxValue(20);
-        if (encryptedChat.ttl >= 0 && encryptedChat.ttl < 16) {
+        if (encryptedChat.ttl > 0 && encryptedChat.ttl < 16) {
             numberPicker.setValue(encryptedChat.ttl);
         } else if (encryptedChat.ttl == 30) {
             numberPicker.setValue(16);
@@ -434,6 +437,8 @@ public class AndroidUtilities {
             numberPicker.setValue(19);
         } else if (encryptedChat.ttl == 60 * 60 * 24 * 7) {
             numberPicker.setValue(20);
+        } else if (encryptedChat.ttl == 0) {
+            numberPicker.setValue(5);
         }
         numberPicker.setFormatter(new NumberPicker.Formatter() {
             @Override
@@ -476,11 +481,24 @@ public class AndroidUtilities {
                     encryptedChat.ttl = 60 * 60 * 24 * 7;
                 }
                 if (oldValue != encryptedChat.ttl) {
-                    SendMessagesHelper.getInstance().sendTTLMessage(encryptedChat);
+                    SendMessagesHelper.getInstance().sendTTLMessage(encryptedChat, null);
                     MessagesStorage.getInstance().updateEncryptedChatTTL(encryptedChat);
                 }
             }
         });
         return builder;
+    }
+
+    public static void clearCursorDrawable(EditText editText) {
+        if (editText == null || Build.VERSION.SDK_INT < 12) {
+            return;
+        }
+        try {
+            Field mCursorDrawableRes = TextView.class.getDeclaredField("mCursorDrawableRes");
+            mCursorDrawableRes.setAccessible(true);
+            mCursorDrawableRes.setInt(editText, 0);
+        } catch (Exception e) {
+            FileLog.e("tmessages", e);
+        }
     }
 }

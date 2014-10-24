@@ -41,6 +41,7 @@ import org.telegram.ui.Views.ActionBar.ActionBarMenuItem;
 import org.telegram.ui.Views.BackupImageView;
 import org.telegram.ui.Views.ActionBar.BaseFragment;
 import org.telegram.ui.Views.IdenticonView;
+import org.telegram.ui.Views.SettingsSectionLayout;
 
 import java.util.ArrayList;
 
@@ -63,6 +64,7 @@ public class UserProfileActivity extends BaseFragment implements NotificationCen
     private int avatarRow;
     private int phoneSectionRow;
     private int phoneRow;
+    private int usernameRow;
     private int settingsSectionRow;
     private int settingsTimerRow;
     private int settingsKeyRow;
@@ -93,6 +95,9 @@ public class UserProfileActivity extends BaseFragment implements NotificationCen
         NotificationCenter.getInstance().addObserver(this, NotificationCenter.encryptedChatUpdated);
         NotificationCenter.getInstance().addObserver(this, NotificationCenter.blockedUsersDidLoaded);
         userBlocked = MessagesController.getInstance().blockedUsers.contains(user_id);
+
+        MessagesController.getInstance().loadFullUser(MessagesController.getInstance().getUser(user_id), classGuid);
+
         return true;
     }
 
@@ -105,6 +110,8 @@ public class UserProfileActivity extends BaseFragment implements NotificationCen
         NotificationCenter.getInstance().removeObserver(this, NotificationCenter.encryptedChatCreated);
         NotificationCenter.getInstance().removeObserver(this, NotificationCenter.encryptedChatUpdated);
         NotificationCenter.getInstance().removeObserver(this, NotificationCenter.blockedUsersDidLoaded);
+
+        MessagesController.getInstance().cancelLoadFullUser(user_id);
     }
 
     private void updateRowsIds() {
@@ -112,6 +119,12 @@ public class UserProfileActivity extends BaseFragment implements NotificationCen
         avatarRow = rowCount++;
         phoneSectionRow = rowCount++;
         phoneRow = rowCount++;
+        TLRPC.User user = MessagesController.getInstance().getUser(user_id);
+        if (user != null && user.username != null && user.username.length() > 0) {
+            usernameRow = rowCount++;
+        } else {
+            usernameRow = -1;
+        }
         settingsSectionRow = rowCount++;
         if (currentEncryptedChat instanceof TLRPC.TL_encryptedChat) {
             settingsTimerRow = rowCount++;
@@ -281,6 +294,7 @@ public class UserProfileActivity extends BaseFragment implements NotificationCen
         if (id == NotificationCenter.updateInterfaces) {
             int mask = (Integer)args[0];
             if ((mask & MessagesController.UPDATE_MASK_AVATAR) != 0 || (mask & MessagesController.UPDATE_MASK_NAME) != 0) {
+                updateRowsIds();
                 if (listView != null) {
                     listView.invalidateViews();
                 }
@@ -526,16 +540,14 @@ public class UserProfileActivity extends BaseFragment implements NotificationCen
                 return view;
             } else if (type == 1) {
                 if (view == null) {
-                    LayoutInflater li = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    view = li.inflate(R.layout.settings_section_layout, viewGroup, false);
+                    view = new SettingsSectionLayout(mContext);
                 }
-                TextView textView = (TextView)view.findViewById(R.id.settings_section_text);
                 if (i == phoneSectionRow) {
-                    textView.setText(LocaleController.getString("PHONE", R.string.PHONE));
+                    ((SettingsSectionLayout) view).setText(LocaleController.getString("Info", R.string.Info));
                 } else if (i == settingsSectionRow) {
-                    textView.setText(LocaleController.getString("SETTINGS", R.string.SETTINGS));
+                    ((SettingsSectionLayout) view).setText(LocaleController.getString("SETTINGS", R.string.SETTINGS));
                 } else if (i == sharedMediaSectionRow) {
-                    textView.setText(LocaleController.getString("SHAREDMEDIA", R.string.SHAREDMEDIA));
+                    ((SettingsSectionLayout) view).setText(LocaleController.getString("SHAREDMEDIA", R.string.SHAREDMEDIA));
                 }
             } else if (type == 2) {
                 final TLRPC.User user = MessagesController.getInstance().getUser(user_id);
@@ -608,9 +620,9 @@ public class UserProfileActivity extends BaseFragment implements NotificationCen
                     if (user.phone != null && user.phone.length() != 0) {
                         textView.setText(PhoneFormat.getInstance().format("+" + user.phone));
                     } else {
-                        textView.setText(LocaleController.getString("Unknown", R.string.Unknown));
+                        textView.setText(LocaleController.getString("NumberUnknown", R.string.NumberUnknown));
                     }
-                    divider.setVisibility(View.INVISIBLE);
+                    divider.setVisibility(usernameRow != -1 ? View.VISIBLE : View.INVISIBLE);
                     detailTextView.setText(LocaleController.getString("PhoneMobile", R.string.PhoneMobile));
                 }
             } else if (type == 3) {
@@ -639,6 +651,15 @@ public class UserProfileActivity extends BaseFragment implements NotificationCen
                     } else {
                         detailTextView.setText(AndroidUtilities.formatTTLString(encryptedChat.ttl));
                     }
+                } else if (i == usernameRow) {
+                    TLRPC.User user = MessagesController.getInstance().getUser(user_id);
+                    textView.setText(LocaleController.getString("Username", R.string.Username));
+                    if (user != null && user.username != null && user.username.length() != 0) {
+                        detailTextView.setText("@" + user.username);
+                    } else {
+                        detailTextView.setText("-");
+                    }
+                    divider.setVisibility(View.INVISIBLE);
                 }
             } else if (type == 4) {
                 if (view == null) {
@@ -675,7 +696,7 @@ public class UserProfileActivity extends BaseFragment implements NotificationCen
                 return 1;
             } else if (i == phoneRow) {
                 return 2;
-            } else if (i == sharedMediaRow || i == settingsTimerRow) {
+            } else if (i == sharedMediaRow || i == settingsTimerRow || i == usernameRow) {
                 return 3;
             } else if (i == settingsKeyRow) {
                 return 4;

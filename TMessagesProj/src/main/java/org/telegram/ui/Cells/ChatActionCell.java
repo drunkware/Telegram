@@ -275,12 +275,14 @@ public class ChatActionCell extends BaseCell {
         backgroundDrawable.draw(canvas);
 
         if (currentMessageObject.type == 11) {
-            imageReceiver.draw(canvas, imageReceiver.getImageX(), imageReceiver.getImageY(), imageReceiver.getImageWidth(), imageReceiver.getImageHeight());
+            imageReceiver.draw(canvas);
         }
 
-        canvas.save();
-        canvas.translate(textXLeft, textY);
-        textLayout.draw(canvas);
-        canvas.restore();
+        if (textLayout != null) {
+            canvas.save();
+            canvas.translate(textXLeft, textY);
+            textLayout.draw(canvas);
+            canvas.restore();
+        }
     }
 }
