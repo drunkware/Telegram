@@ -234,7 +234,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         public int getSelectedCount();
     }
 
-    private static class FrameLayoutTouchListener extends FrameLayout {
+    private class FrameLayoutTouchListener extends FrameLayout {
         public FrameLayoutTouchListener(Context context) {
             super(context);
         }
@@ -251,7 +251,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         }
     }
 
-    private static class FrameLayoutDrawer extends FrameLayout {
+    private class FrameLayoutDrawer extends FrameLayout {
         public FrameLayoutDrawer(Context context) {
             super(context);
             setWillNotDraw(false);
@@ -611,12 +611,14 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     return;
                 }
                 try {
-                    int size[] = new int[1];
-                    TLRPC.FileLocation fileLocation = getFileLocation(currentIndex, size);
-                    if (fileLocation == null) {
-                        return;
+                    File f = null;
+
+                    if (currentMessageObject != null) {
+                        f = FileLoader.getPathToMessage(currentMessageObject.messageOwner);
+                    } else if (currentFileLocation != null) {
+                        f = FileLoader.getPathToAttach(currentFileLocation, avatarsUserId != 0);
                     }
-                    File f = FileLoader.getPathToAttach(fileLocation, avatarsUserId != 0);
+
                     if (f.exists()) {
                         Intent intent = new Intent(Intent.ACTION_SEND);
                         if (f.toString().endsWith("mp4")) {
@@ -2138,7 +2140,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         float ai = -1;
         if (System.currentTimeMillis() - animationStartTime < animationDuration) {
             ai = interpolator.getInterpolation((float)(System.currentTimeMillis() - animationStartTime) / animationDuration);
-            if (ai >= 0.95) {
+            if (ai >= 0.999f) {
                 ai = -1;
             }
         }
