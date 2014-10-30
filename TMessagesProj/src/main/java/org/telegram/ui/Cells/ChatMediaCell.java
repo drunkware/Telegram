@@ -942,7 +942,7 @@ public class ChatMediaCell extends ChatBaseCell implements MediaController.FileD
                 infoLayout.draw(canvas);
                 canvas.restore();
             }
-        } else if (infoLayout != null && (buttonState == 1 || buttonState == 0 || buttonState == 3 || currentMessageObject.isSecretPhoto()  || (buttonState == 2 && currentMessageObject.type == 8) )) {
+        } else if (infoLayout != null && (buttonState == 1 || buttonState == 0 || buttonState == 3 || currentMessageObject.isSecretPhoto()  || currentMessageObject.type == 1 || (buttonState == 2 && currentMessageObject.type == 8) )) {
             infoPaint.setColor(0xffffffff);
             if (currentMessageObject.type == 1){
                 setDrawableBounds(mediaBackgroundDrawable, photoImage.getImageX() + AndroidUtilities.dp(4), photoImage.getImageY() + AndroidUtilities.dp(4), infoWidth + AndroidUtilities.dp(8) + infoOffset, AndroidUtilities.dpf(16.5f));
