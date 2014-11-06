@@ -78,7 +78,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
     private int settingsSectionRow;
     private int textSizeRow;
     private int enableAnimationsRow;
-    private int enableMarkdownRow;
+    private int UltraRow;
     private int notificationRow;
     private int blockedRow;
     private int backgroundRow;
@@ -185,7 +185,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         usernameRow = rowCount++;
         settingsSectionRow = rowCount++;
         enableAnimationsRow = rowCount++;
-        enableMarkdownRow = rowCount++;
+        UltraRow = rowCount++;
         languageRow = rowCount++;
         notificationRow = rowCount++;
         blockedRow = rowCount++;
@@ -282,15 +282,8 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                         if (listView != null) {
                             listView.invalidateViews();
                         }
-                    } else if (i == enableMarkdownRow) {
-                        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE);
-                        boolean animations = preferences.getBoolean("view_markdown", false);
-                        SharedPreferences.Editor editor = preferences.edit();
-                        editor.putBoolean("view_markdown", !animations);
-                        editor.commit();
-                        if (listView != null) {
-                            listView.invalidateViews();
-                        }
+                    } else if (i == UltraRow) {
+                        presentFragment(new SettingsUltraFeaturesActivity());
                     } else if (i == notificationRow) {
                         presentFragment(new SettingsNotificationsActivity());
                     } else if (i == blockedRow) {
@@ -728,7 +721,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         public boolean isEnabled(int i) {
             return i == textSizeRow || i == enableAnimationsRow || i == blockedRow || i == notificationRow || i == backgroundRow ||
                     i == askQuestionRow || i == sendLogsRow || i == sendByEnterRow || i == terminateSessionsRow || i == wifiDownloadRow ||
-                    i == mobileDownloadRow || i == clearLogsRow || i == roamingDownloadRow || i == languageRow || i == usernameRow || i == enableMarkdownRow ||
+                    i == mobileDownloadRow || i == clearLogsRow || i == roamingDownloadRow || i == languageRow || i == usernameRow || i == UltraRow ||
                     i == switchBackendButtonRow || i == telegramFaqRow || i == contactsSortRow || i == contactsReimportRow || i == saveToGalleryRow;
         }
 
@@ -868,6 +861,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 if (i == notificationRow) {
                     textView.setText(LocaleController.getString("NotificationsAndSounds", R.string.NotificationsAndSounds));
                     divider.setVisibility(View.VISIBLE);
+                } else if (i == UltraRow) {
+                    textView.setText(LocaleController.getString("UltraFeatures", R.string.UltraFeatures));
+                    divider.setVisibility(View.VISIBLE);
                 } else if (i == blockedRow) {
                     textView.setText(LocaleController.getString("BlockedUsers", R.string.BlockedUsers));
                     divider.setVisibility(backgroundRow != 0 ? View.VISIBLE : View.INVISIBLE);
@@ -918,15 +914,6 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                     textView.setText(LocaleController.getString("SendByEnter", R.string.SendByEnter));
                     divider.setVisibility(View.INVISIBLE);
                     boolean enabled = preferences.getBoolean("send_by_enter", false);
-                    if (enabled) {
-                        checkButton.setImageResource(R.drawable.btn_check_on);
-                    } else {
-                        checkButton.setImageResource(R.drawable.btn_check_off);
-                    }
-                } else if (i == enableMarkdownRow) {
-                    textView.setText(LocaleController.getString("EnableMarkdown", R.string.EnableMarkdown));
-                    divider.setVisibility(View.VISIBLE);
-                    boolean enabled = preferences.getBoolean("view_markdown", false);
                     if (enabled) {
                         checkButton.setImageResource(R.drawable.btn_check_on);
                     } else {
@@ -1099,9 +1086,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 return 1;
             } else if (i == textSizeRow || i == languageRow || i == contactsSortRow || i == numberRow || i == usernameRow) {
                 return 5;
-            } else if (i == enableAnimationsRow || i == sendByEnterRow ||i == enableMarkdownRow || i == saveToGalleryRow) {
+            } else if (i == enableAnimationsRow || i == sendByEnterRow || i == saveToGalleryRow) {
                 return 3;
-            } else if (i == notificationRow || i == blockedRow || i == backgroundRow || i == askQuestionRow || i == sendLogsRow || i == terminateSessionsRow || i == clearLogsRow || i == switchBackendButtonRow || i == telegramFaqRow || i == contactsReimportRow) {
+            } else if (i == notificationRow || i == UltraRow || i == blockedRow || i == backgroundRow || i == askQuestionRow || i == sendLogsRow || i == terminateSessionsRow || i == clearLogsRow || i == switchBackendButtonRow || i == telegramFaqRow || i == contactsReimportRow) {
                 return 2;
             } else if (i == logoutRow) {
                 return 4;
