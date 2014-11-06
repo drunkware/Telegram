@@ -488,5 +488,5 @@
     <!--UltraFeatures-->
     <string name="UltraFeatures">Ultra Features</string>
     <string name="PhotoResolution">Photo Resolution</string>
-    <string name="useAndroidEmoji">Use Android Emoji</string>
+    <string name="showAndroidEmoji">Show Android Emoji</string>
 </resources>

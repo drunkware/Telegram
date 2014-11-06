@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Locale;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -884,6 +885,10 @@ public class Emoji {
 
     public static CharSequence replaceEmoji(CharSequence cs, Paint.FontMetricsInt fontMetrics, int size) {
         if (cs == null || cs.length() == 0) {
+            return cs;
+        }
+        // If showAndroidEmoji is enabled don't replace anything
+        if (ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE).getBoolean("showAndroidEmoji", false)) {
             return cs;
         }
         Spannable s;

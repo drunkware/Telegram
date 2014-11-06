@@ -9,15 +9,8 @@
 package org.telegram.ui;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,31 +18,21 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.SeekBar;
 
-import org.telegram.android.AndroidUtilities;
 import org.telegram.android.LocaleController;
-import org.telegram.android.NotificationsController;
-import org.telegram.android.NotificationCenter;
-import org.telegram.messenger.TLObject;
-import org.telegram.messenger.TLRPC;
-import org.telegram.messenger.ConnectionsManager;
-import org.telegram.messenger.FileLog;
-import org.telegram.android.MessagesController;
 import org.telegram.messenger.R;
-import org.telegram.messenger.RPCRequest;
 import org.telegram.ui.Adapters.BaseFragmentAdapter;
 import org.telegram.ui.Views.ActionBar.ActionBarLayer;
 import org.telegram.ui.Views.ActionBar.BaseFragment;
-import org.telegram.ui.Views.ColorPickerView;
-import org.telegram.ui.Views.SettingsSectionLayout;
 
 public class SettingsUltraFeaturesActivity extends BaseFragment {
     private ListView listView;
+    private SeekBar seekBar;
 
     private int enableMarkdownRow;
     private int photoResolutionRow;
-    private int useNativeEmojiRow;
+    private int showAndroidEmojiRow;
 
     private int rowCount = 0;
 
@@ -57,9 +40,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
     public boolean onFragmentCreate() {
         enableMarkdownRow = rowCount++;
         photoResolutionRow = rowCount++;
-        useNativeEmojiRow = rowCount++;
-
-//        NotificationCenter.getInstance().addObserver(this, NotificationCenter.notificationsSettingsUpdated);
+        showAndroidEmojiRow = rowCount++;
 
         return super.onFragmentCreate();
     }
@@ -67,7 +48,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
     @Override
     public void onFragmentDestroy() {
         super.onFragmentDestroy();
-//        NotificationCenter.getInstance().removeObserver(this, NotificationCenter.notificationsSettingsUpdated);
+
     }
 
     @Override
@@ -99,23 +80,42 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                         editor.putBoolean("view_markdown", !enabled);
                         editor.commit();
                         listView.invalidateViews();
-                    } else if (i == photoResolutionRow) {
+                    } else if (i == showAndroidEmojiRow) {
                         SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
                         SharedPreferences.Editor editor = preferences.edit();
-                        boolean enabled = preferences.getBoolean("photoResolution", false);
-                        editor.putBoolean("photoResolution", !enabled);
-                        editor.commit();
-                        listView.invalidateViews();
-                    } else if (i == useNativeEmojiRow) {
-                        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = preferences.edit();
-                        boolean enabled = preferences.getBoolean("useNativeEmoji", false);
-                        editor.putBoolean("useNativeEmoji", !enabled);
+                        boolean enabled = preferences.getBoolean("showAndroidEmoji", false);
+                        editor.putBoolean("showAndroidEmoji", !enabled);
                         editor.commit();
                         listView.invalidateViews();
                     }
                 }
             });
+            seekBar = (SeekBar)fragmentView.findViewById(R.id.settings_row_seekBar);
+
+            //fragmentView = inflater.inflate(R.layout.settings_row_ultra_slider_layout, container, false);
+            //seekBar = (SeekBar)fragmentView.findViewById(R.id.settings_row_seekBar);
+//            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+//                @Override
+//                public void onStopTrackingTouch(SeekBar seekBarl) {
+//                    SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
+//                    SharedPreferences.Editor editor = preferences.edit();
+//                    int seekPercentage = preferences.getInt("photoResolution", 80);
+//                    editor.putInt("photoResolution", seekPercentage);
+//                    editor.commit();
+//                    listView.invalidateViews();
+//                }
+//
+//                @Override
+//                public void onStartTrackingTouch(SeekBar seekBarl) {
+//                    // TODO Auto-generated method stub
+//                }
+//
+//                @Override
+//                public void onProgressChanged(SeekBar seekBarl, int progress, boolean fromUser) {
+//
+//                }
+//            });
+
         } else {
             ViewGroup parent = (ViewGroup)fragmentView.getParent();
             if (parent != null) {
@@ -124,13 +124,6 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
         }
         return fragmentView;
     }
-
-//    @Override
-//    public void didReceivedNotification(int id, Object... args) {
-//        if (id == NotificationCenter.notificationsSettingsUpdated) {
-//            listView.invalidateViews();
-//        }
-//    }
 
     private class ListAdapter extends BaseFragmentAdapter {
         private Context mContext;
@@ -146,7 +139,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
 
         @Override
         public boolean isEnabled(int i) {
-            return (i == enableMarkdownRow || i == photoResolutionRow || i == useNativeEmojiRow);
+            return (i == enableMarkdownRow || i == photoResolutionRow || i == showAndroidEmojiRow);
         }
 
         @Override
@@ -174,19 +167,8 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
             int type = getItemViewType(i);
             if (type == 0) {
                 if (view == null) {
-                    view = new SettingsSectionLayout(mContext);
-                }
-                if (i == enableMarkdownRow) {
-                    ((SettingsSectionLayout) view).setText(LocaleController.getString("EnableMarkdown", R.string.EnableMarkdown));
-                } else if (i == photoResolutionRow) {
-                    ((SettingsSectionLayout) view).setText(LocaleController.getString("PhotoResolution", R.string.PhotoResolution));
-                } else if (i == useNativeEmojiRow) {
-                    ((SettingsSectionLayout) view).setText(LocaleController.getString("useAndroidEmoji", R.string.useAndroidEmoji));
-                }
-            } if (type == 1) {
-                if (view == null) {
                     LayoutInflater li = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    view = li.inflate(R.layout.settings_row_check_notify_layout, viewGroup, false);
+                    view = li.inflate(R.layout.settings_row_check_layout, viewGroup, false);
                 }
                 TextView textView = (TextView)view.findViewById(R.id.settings_row_text);
                 View divider = view.findViewById(R.id.settings_row_divider);
@@ -199,19 +181,33 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                     textView.setText(LocaleController.getString("EnableMarkdown", R.string.EnableMarkdown));
                     divider.setVisibility(View.VISIBLE);
                     enabled = preferences.getBoolean("view_markdown", false);
-                } else if (i == photoResolutionRow) {
-                    textView.setText(LocaleController.getString("PhotoResolution", R.string.PhotoResolution));
+                } else if (i == showAndroidEmojiRow) {
+                    textView.setText(LocaleController.getString("showAndroidEmoji", R.string.showAndroidEmoji));
                     divider.setVisibility(View.VISIBLE);
-                    enabled = preferences.getBoolean("photoResolution", false);
-                } else if (i == useNativeEmojiRow) {
-                    textView.setText(LocaleController.getString("useAndroidEmoji", R.string.useAndroidEmoji));
-                    divider.setVisibility(View.VISIBLE);
-                    enabled = preferences.getBoolean("useNativeEmoji", false);
+                    enabled = preferences.getBoolean("showAndroidEmoji", false);
                 }
                 if (enabled) {
                     checkButton.setImageResource(R.drawable.btn_check_on);
                 } else {
                     checkButton.setImageResource(R.drawable.btn_check_off);
+                }
+            } else if (type == 1) {
+                if (view == null) {
+                    LayoutInflater li = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    view = li.inflate(R.layout.settings_row_ultra_slider_layout, viewGroup, false);
+                }
+                TextView textView = (TextView)view.findViewById(R.id.settings_row_text);
+                View divider = view.findViewById(R.id.settings_row_divider);
+
+                SeekBar seekBar = (SeekBar)view.findViewById(R.id.settings_row_seekBar);
+                SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
+
+                if (i == photoResolutionRow) {
+                    int seekPercentage;
+                    textView.setText(LocaleController.getString("PhotoResolution", R.string.PhotoResolution));
+                    divider.setVisibility(View.VISIBLE);
+                    seekPercentage = preferences.getInt("photoResolution", 80);
+                    seekBar.setProgress(seekPercentage);
                 }
             }
             return view;
@@ -219,13 +215,14 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
 
         @Override
         public int getItemViewType(int i) {
-            if (i == 99999999) { //not sure which one
+            if (i == enableMarkdownRow || i == showAndroidEmojiRow ) {
                 return 0;
-            } else if (i == enableMarkdownRow || i == photoResolutionRow || i == useNativeEmojiRow ) {
+            } else if ( i == photoResolutionRow ) {
                 return 1;
             } else {
-                return 2;
+                return 9;
             }
+
         }
 
         @Override
