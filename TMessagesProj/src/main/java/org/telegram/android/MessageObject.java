@@ -296,7 +296,7 @@ public class MessageObject {
             messageText = Emoji.fixSBEmoji(messageText);    //Fix SB encoding if needed before displaying the message
 
             // Message Markdown
-            if (ApplicationLoader.applicationContext.getSharedPreferences("mainconfig", Activity.MODE_PRIVATE).getBoolean("view_markdown", false)) {
+            if (ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE).getBoolean("view_markdown", false)) {
                 // To reserve all spaces since "fromHtml" will collapse all consecutive spaces into only 1.
                 // So every two spaces will be replaced by one space and one non-breaking space that way we can reserve the spaces and also allow word wrapping.
                 messageText = messageText.toString().replace("  ", " &nbsp;");

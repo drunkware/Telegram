@@ -485,4 +485,8 @@
     <string name="formatterDay24H">HH:mm</string>
     <string name="formatterDay12H">h:mm a</string>
     <string name="formatDateAtTime">%1$s at %2$s</string>
+    <!--UltraFeatures-->
+    <string name="UltraFeatures">Ultra Features</string>
+    <string name="PhotoResolution">Photo Resolution</string>
+    <string name="useAndroidEmoji">Use Android Emoji</string>
 </resources>
