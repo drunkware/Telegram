@@ -1,40 +1,29 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="top"
-    android:orientation="vertical">
+    android:layout_height="50dp"
+    android:layout_gravity="top">
 
     <TextView
         android:id="@+id/settings_row_text"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="fill_parent"
         android:layout_gravity="top"
+        android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginTop="10dp"
         android:gravity="center_vertical"
-        android:paddingLeft="8dp"
         android:textColor="#333333"
         android:textSize="18sp" />
 
-    <SeekBar
-        android:id="@+id/settings_row_seekBar"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:max="100"
-        android:progress="80" />
-
     <TextView
-        android:id="@+id/settings_seek_percent"
+        android:id="@+id/settings_seekBar_percent"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="0dp"
+        android:layout_height="fill_parent"
+        android:layout_gravity="end"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="14dp"
         android:gravity="center_vertical"
-        android:paddingLeft="8dp"
-        android:paddingRight="8dp"
-        android:textColor="#333333"
-        android:textSize="18sp"
-        android:text="percent" />
+        android:textColor="#ff6d6d6d"
+        android:textSize="18sp" />
 
     <View
         android:id="@+id/settings_row_divider"
@@ -43,4 +32,4 @@
         android:layout_gravity="bottom"
         android:background="@color/divider" />
 
-</LinearLayout>
+</FrameLayout>

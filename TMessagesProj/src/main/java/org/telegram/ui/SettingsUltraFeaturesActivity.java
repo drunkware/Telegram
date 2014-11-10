@@ -1,15 +1,17 @@
 /*
- * This is the source code of Telegram for Android v. 1.3.2.
+ * This is the source code of Telegram Ultra for Android.
  * It is licensed under GNU GPL v. 2 or later.
  * You should have received a copy of the license in this archive (see LICENSE).
  *
- * Copyright Nikolai Kudashov, 2013.
+ * Copyright Fahad Alduraibi, 2014.
  */
 
 package org.telegram.ui;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,13 +27,14 @@ import org.telegram.messenger.R;
 import org.telegram.ui.Adapters.BaseFragmentAdapter;
 import org.telegram.ui.Views.ActionBar.ActionBarLayer;
 import org.telegram.ui.Views.ActionBar.BaseFragment;
+import org.telegram.ui.Views.ColorPickerView;
 
 public class SettingsUltraFeaturesActivity extends BaseFragment {
     private ListView listView;
     private SeekBar seekBar;
 
     private int enableMarkdownRow;
-    private int photoResolutionRow;
+    private int PhotoQualityRow;
     private int showAndroidEmojiRow;
 
     private int rowCount = 0;
@@ -39,7 +42,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
     @Override
     public boolean onFragmentCreate() {
         enableMarkdownRow = rowCount++;
-        photoResolutionRow = rowCount++;
+        PhotoQualityRow = rowCount++;
         showAndroidEmojiRow = rowCount++;
 
         return super.onFragmentCreate();
@@ -52,7 +55,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
     }
 
     @Override
-    public View createView(LayoutInflater inflater, ViewGroup container) {
+    public View createView(final LayoutInflater inflater, ViewGroup container) {
         if (fragmentView == null) {
             actionBarLayer.setDisplayHomeAsUpEnabled(true, R.drawable.ic_ab_back);
             actionBarLayer.setBackOverlay(R.layout.updating_state_layout);
@@ -68,7 +71,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
 
             fragmentView = inflater.inflate(R.layout.settings_layout, container, false);
             final ListAdapter listAdapter = new ListAdapter(getParentActivity());
-            listView = (ListView)fragmentView.findViewById(R.id.listView);
+            listView = (ListView) fragmentView.findViewById(R.id.listView);
             listView.setAdapter(listAdapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
@@ -87,37 +90,62 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                         editor.putBoolean("showAndroidEmoji", !enabled);
                         editor.commit();
                         listView.invalidateViews();
+                    } else if (i == PhotoQualityRow) {
+                        final View layout = inflater.inflate(R.layout.settings_seekbar_dialog_layout, (ViewGroup) fragmentView.findViewById(R.id.seekBar_Dialog_Layout));
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+                        builder.setView(layout);
+                        builder.setTitle(LocaleController.getString("PhotoQuality", R.string.PhotoQuality));
+                        builder.setPositiveButton(LocaleController.getString("OK", R.string.OK), new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                if (listView != null) {
+                                    listView.invalidateViews();
+                                }
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialogInterface) {
+                                if (listView != null) {
+                                    listView.invalidateViews();
+                                }
+                            }
+                        });
+                        AlertDialog alertDialog = builder.create();
+                        alertDialog.show();
+                        SeekBar sb = (SeekBar) layout.findViewById(R.id.seekBar1);
+                        final TextView txtSeekPercent = (TextView) layout.findViewById(R.id.txtSeekPercent);
+                        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
+                        int percent = preferences.getInt("PhotoQuality", 80);
+                        txtSeekPercent.setText(Integer.toString(percent) + "%");
+                        sb.setProgress(percent);
+                        sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                                txtSeekPercent.setText(Integer.toString(progress) + "%");
+                            }
+
+                            @Override
+                            public void onStartTrackingTouch(SeekBar seekBar) {
+
+                            }
+
+                            @Override
+                            public void onStopTrackingTouch(SeekBar seekBar) {
+                                SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putInt("PhotoQuality", seekBar.getProgress());
+                                editor.commit();
+//                                if (listView != null) {
+//                                    listView.invalidateViews();
+//                                }
+                            }
+                        });
+
                     }
                 }
             });
-            seekBar = (SeekBar)fragmentView.findViewById(R.id.settings_row_seekBar);
-
-            //fragmentView = inflater.inflate(R.layout.settings_row_ultra_slider_layout, container, false);
-            //seekBar = (SeekBar)fragmentView.findViewById(R.id.settings_row_seekBar);
-//            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-//                @Override
-//                public void onStopTrackingTouch(SeekBar seekBarl) {
-//                    SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
-//                    SharedPreferences.Editor editor = preferences.edit();
-//                    int seekPercentage = preferences.getInt("photoResolution", 80);
-//                    editor.putInt("photoResolution", seekPercentage);
-//                    editor.commit();
-//                    listView.invalidateViews();
-//                }
-//
-//                @Override
-//                public void onStartTrackingTouch(SeekBar seekBarl) {
-//                    // TODO Auto-generated method stub
-//                }
-//
-//                @Override
-//                public void onProgressChanged(SeekBar seekBarl, int progress, boolean fromUser) {
-//
-//                }
-//            });
-
         } else {
-            ViewGroup parent = (ViewGroup)fragmentView.getParent();
+            ViewGroup parent = (ViewGroup) fragmentView.getParent();
             if (parent != null) {
                 parent.removeView(fragmentView);
             }
@@ -139,7 +167,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
 
         @Override
         public boolean isEnabled(int i) {
-            return (i == enableMarkdownRow || i == photoResolutionRow || i == showAndroidEmojiRow);
+            return (i == enableMarkdownRow || i == PhotoQualityRow || i == showAndroidEmojiRow);
         }
 
         @Override
@@ -167,13 +195,13 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
             int type = getItemViewType(i);
             if (type == 0) {
                 if (view == null) {
-                    LayoutInflater li = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    LayoutInflater li = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     view = li.inflate(R.layout.settings_row_check_layout, viewGroup, false);
                 }
-                TextView textView = (TextView)view.findViewById(R.id.settings_row_text);
+                TextView textView = (TextView) view.findViewById(R.id.settings_row_text);
                 View divider = view.findViewById(R.id.settings_row_divider);
 
-                ImageView checkButton = (ImageView)view.findViewById(R.id.settings_row_check_button);
+                ImageView checkButton = (ImageView) view.findViewById(R.id.settings_row_check_button);
                 SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
                 boolean enabled = false;
 
@@ -193,21 +221,17 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                 }
             } else if (type == 1) {
                 if (view == null) {
-                    LayoutInflater li = (LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    LayoutInflater li = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                     view = li.inflate(R.layout.settings_row_ultra_slider_layout, viewGroup, false);
                 }
-                TextView textView = (TextView)view.findViewById(R.id.settings_row_text);
+                TextView textView = (TextView) view.findViewById(R.id.settings_row_text);
                 View divider = view.findViewById(R.id.settings_row_divider);
-
-                SeekBar seekBar = (SeekBar)view.findViewById(R.id.settings_row_seekBar);
+                TextView seekBarPercent = (TextView) view.findViewById(R.id.settings_seekBar_percent);
                 SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
-
-                if (i == photoResolutionRow) {
-                    int seekPercentage;
-                    textView.setText(LocaleController.getString("PhotoResolution", R.string.PhotoResolution));
+                if (i == PhotoQualityRow) {
+                    textView.setText(LocaleController.getString("PhotoQuality", R.string.PhotoQuality));
+                    seekBarPercent.setText(Integer.toString(preferences.getInt("PhotoQuality", 80)) + "%");
                     divider.setVisibility(View.VISIBLE);
-                    seekPercentage = preferences.getInt("photoResolution", 80);
-                    seekBar.setProgress(seekPercentage);
                 }
             }
             return view;
@@ -215,9 +239,9 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
 
         @Override
         public int getItemViewType(int i) {
-            if (i == enableMarkdownRow || i == showAndroidEmojiRow ) {
+            if (i == enableMarkdownRow || i == showAndroidEmojiRow) {
                 return 0;
-            } else if ( i == photoResolutionRow ) {
+            } else if (i == PhotoQualityRow) {
                 return 1;
             } else {
                 return 9;

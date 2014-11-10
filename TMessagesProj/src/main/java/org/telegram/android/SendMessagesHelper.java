@@ -8,6 +8,7 @@
 
 package org.telegram.android;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
@@ -1835,7 +1836,8 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
         if (size != null) {
             sizes.add(size);
         }
-        size = ImageLoader.scaleAndSaveImage(bitmap, AndroidUtilities.getPhotoSize(), AndroidUtilities.getPhotoSize(), 80, false);
+        int photoQuality = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE).getInt("PhotoQuality", 80);
+        size = ImageLoader.scaleAndSaveImage(bitmap, AndroidUtilities.getPhotoSize(), AndroidUtilities.getPhotoSize(), photoQuality, false);
         if (size != null) {
             sizes.add(size);
         }
