@@ -22,19 +22,11 @@
         android:layout_marginRight="8dp"
         android:layout_marginTop="17dp" />
 
-    <View
-        android:id="@+id/settings_row_divider"
-        android:layout_width="fill_parent"
-        android:layout_height="1px"
-        android:layout_gravity="bottom"
-        android:background="@color/divider"
-        android:layout_below="@+id/seekBar1" />
-
     <TextView
         android:id="@+id/txtPQinfo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/settings_row_divider"
+        android:layout_below="@+id/seekBar1"
         android:layout_marginBottom="16dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
@@ -42,4 +34,10 @@
         android:text="@string/PhotoQualityInfo"
         android:textSize="14sp" />
 
+    <View
+        android:id="@+id/dummy_row_to_fix_text_height_bug"
+        android:layout_width="fill_parent"
+        android:layout_height="1px"
+        android:layout_below="@+id/txtPQinfo"
+        android:visibility="invisible" />
 </RelativeLayout>
