@@ -1058,7 +1058,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 } else if (i == notificationRow) {
                     textCell.setText(LocaleController.getString("NotificationsAndSounds", R.string.NotificationsAndSounds), true);
                 } else if (i == UltraRow) {
-                    textCell.setText(LocaleController.getString("UltraFeatures", R.string.UltraFeatures), true);
+                    textCell.setText(LocaleController.getString("UltraSettings", R.string.UltraSettings), true);
                 } else if (i == backgroundRow) {
                     textCell.setText(LocaleController.getString("ChatBackground", R.string.ChatBackground), true);
                 } else if (i == sendLogsRow) {

@@ -59,7 +59,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
         if (fragmentView == null) {
             actionBar.setBackButtonImage(R.drawable.ic_ab_back);
             actionBar.setAllowOverlayTitle(true);
-            actionBar.setTitle(LocaleController.getString("UltraFeatures", R.string.UltraFeatures));
+            actionBar.setTitle(LocaleController.getString("UltraSettings", R.string.UltraSettings));
             actionBar.setActionBarMenuOnItemClick(new ActionBar.ActionBarMenuOnItemClick() {
                 @Override
                 public void onItemClick(int id) {

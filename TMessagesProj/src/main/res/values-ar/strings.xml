@@ -521,9 +521,9 @@
     <string name="formatterDay24H">HH:mm</string>
     <string name="formatterDay12H">h:mm a</string>
     <string name="formatDateAtTime">%1$s الساعة %2$s</string>
-    <!--UltraFeatures-->
-    <string name="UltraFeatures">اعدادات الترا</string>
+    <!--UltraSettings-->
+    <string name="UltraSettings">اعدادات الترا</string>
     <string name="PhotoQuality">جودة الصور</string>
     <string name="showAndroidEmoji">اعرض فيسات الاندرويد</string>
-    <string name="PhotoQualityInfo">القيمة هنا تستخدم مع الصور الجديدة فقط، القيم العالية تعطي جودة اعلى لكن حجم ملف اكبر. نسبة 85% عادة تقدم توازن بين الجودة والحجم.</string>
+    <string name="PhotoQualityInfo">القيمة هنا تستخدم مع الصور الجديدة فقط، القيم العالية تعطي جودة اعلى لكن حجم ملف اكبر.\n\n* نسبة 80% عادة تقدم توازن بين الجودة والحجم.</string>
 </resources>

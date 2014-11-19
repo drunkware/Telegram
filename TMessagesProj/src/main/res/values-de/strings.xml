@@ -518,9 +518,9 @@
     <string name="formatterDay24H">HH:mm</string>
     <string name="formatterDay12H">h:mm a</string>
     <string name="formatDateAtTime">%1$s um %2$s</string>
-    <!--UltraFeatures-->
-    <string name="UltraFeatures">Ultra Features</string>
+    <!--UltraSettings-->
+    <string name="UltraSettings">Ultra Settings</string>
     <string name="PhotoQuality">Photo Quality</string>
     <string name="showAndroidEmoji">Show Android Emoji</string>
-    <string name="PhotoQualityInfo">This setting only applies to new photos, higher value means better quality but also means bigger file size. 85% is usually a good balance between size and quality.</string>
+    <string name="PhotoQualityInfo">This setting only applies to new photos, higher value means better quality but also means bigger file size. \n\n* 80% is usually a good balance between size and quality.</string>
 </resources>
