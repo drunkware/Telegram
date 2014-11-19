@@ -97,7 +97,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
             final TLRPC.InputFile file = (TLRPC.InputFile)args[1];
             final TLRPC.InputEncryptedFile encryptedFile = (TLRPC.InputEncryptedFile)args[2];
 
-            AndroidUtilities.RunOnUIThread(new Runnable() {
+            AndroidUtilities.runOnUIThread(new Runnable() {
                 @Override
                 public void run() {
                     ArrayList<DelayedMessage> arr = delayedMessages.get(location);
@@ -163,7 +163,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
             final String location = (String) args[0];
             final boolean enc = (Boolean) args[1];
 
-            AndroidUtilities.RunOnUIThread(new Runnable() {
+            AndroidUtilities.runOnUIThread(new Runnable() {
                 @Override
                 public void run() {
                     ArrayList<DelayedMessage> arr = delayedMessages.get(location);
@@ -1068,7 +1068,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
         MessagesStorage.getInstance().getStorageQueue().postRunnable(new Runnable() {
             @Override
             public void run() {
-                AndroidUtilities.RunOnUIThread(new Runnable() {
+                AndroidUtilities.runOnUIThread(new Runnable() {
                     @Override
                     public void run() {
                         NotificationCenter.getInstance().postNotificationName(NotificationCenter.stopEncodingService, path);
@@ -1122,7 +1122,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                                 newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SENT;
                                 MessagesStorage.getInstance().putMessages(currentMessage, true, false, false, 0);
                             }
-                            AndroidUtilities.RunOnUIThread(new Runnable() {
+                            AndroidUtilities.runOnUIThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SENT;
@@ -1146,7 +1146,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                     });
                 } else {
                     MessagesStorage.getInstance().markMessageAsSendError(newMsgObj.id);
-                    AndroidUtilities.RunOnUIThread(new Runnable() {
+                    AndroidUtilities.runOnUIThread(new Runnable() {
                         @Override
                         public void run() {
                             newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SEND_ERROR;
@@ -1163,7 +1163,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
             @Override
             public void quickAck() {
                 final int msg_id = newMsgObj.id;
-                AndroidUtilities.RunOnUIThread(new Runnable() {
+                AndroidUtilities.runOnUIThread(new Runnable() {
                     @Override
                     public void run() {
                         newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SENT;
@@ -1311,7 +1311,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                                             }
                                         }
                                         MessagesStorage.getInstance().updateMessageStateAndId(newMsgObj.random_id, newMsgObj.id, newMsgObj.id, res.date, false);
-                                        AndroidUtilities.RunOnUIThread(new Runnable() {
+                                        AndroidUtilities.runOnUIThread(new Runnable() {
                                             @Override
                                             public void run() {
                                                 newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SENT;
@@ -1326,7 +1326,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                                 });
                             } else {
                                 MessagesStorage.getInstance().markMessageAsSendError(newMsgObj.id);
-                                AndroidUtilities.RunOnUIThread(new Runnable() {
+                                AndroidUtilities.runOnUIThread(new Runnable() {
                                     @Override
                                     public void run() {
                                         newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SEND_ERROR;
@@ -1811,7 +1811,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
     }
 
     protected void processUnsentMessages(final ArrayList<TLRPC.Message> messages, final ArrayList<TLRPC.User> users, final ArrayList<TLRPC.Chat> chats, final ArrayList<TLRPC.EncryptedChat> encryptedChats) {
-        AndroidUtilities.RunOnUIThread(new Runnable() {
+        AndroidUtilities.runOnUIThread(new Runnable() {
             @Override
             public void run() {
                 MessagesController.getInstance().putUsers(users, true);
@@ -1923,7 +1923,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
 
         final TLRPC.TL_document documentFinal = document;
         final String originalPathFinal = originalPath;
-        AndroidUtilities.RunOnUIThread(new Runnable() {
+        AndroidUtilities.runOnUIThread(new Runnable() {
             @Override
             public void run() {
                 SendMessagesHelper.getInstance().sendMessage(documentFinal, originalPathFinal, path, dialog_id);
@@ -2041,7 +2041,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                         if (photo != null) {
                             final String originalPathFinal = originalPath;
                             final TLRPC.TL_photo photoFinal = photo;
-                            AndroidUtilities.RunOnUIThread(new Runnable() {
+                            AndroidUtilities.runOnUIThread(new Runnable() {
                                 @Override
                                 public void run() {
                                     SendMessagesHelper.getInstance().sendMessage(photoFinal, originalPathFinal, dialog_id);
@@ -2163,7 +2163,7 @@ public class SendMessagesHelper implements NotificationCenter.NotificationCenter
                 final TLRPC.TL_video videoFinal = video;
                 final String originalPathFinal = originalPath;
                 final String finalPath = path;
-                AndroidUtilities.RunOnUIThread(new Runnable() {
+                AndroidUtilities.runOnUIThread(new Runnable() {
                     @Override
                     public void run() {
                         SendMessagesHelper.getInstance().sendMessage(videoFinal, originalPathFinal, finalPath, dialog_id);
