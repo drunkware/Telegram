@@ -89,6 +89,7 @@ import org.telegram.ui.Components.TimerDrawable;
 import org.telegram.ui.Components.TypingDotsDrawable;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -3068,18 +3069,13 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 String ObjectPath = "";
                 String MimeType = "";
 
-                if (selectedObject.messageOwner.attachPath != null && selectedObject.messageOwner.attachPath.length() != 0) {
-                    ObjectPath = selectedObject.messageOwner.attachPath;
-                }
+                File ObjectFile = FileLoader.getPathToMessage(selectedObject.messageOwner);
 
-                File f = new File(ObjectPath);
-                if (!f.exists() || f.length() == 0) {
-                    ObjectPath = AndroidUtilities.getCacheDir().toString() + File.separator + selectedObject.getFileName();
-                }
-
-                if (ObjectPath == null) {
+                try {
+                    ObjectPath = ObjectFile.getCanonicalPath();
+                } catch (IOException e) {
                     // TODO: Error path not found!
-                    return;
+                    e.printStackTrace();
                 }
 
                 String fileExt = MimeTypeMap.getFileExtensionFromUrl(ObjectPath);
