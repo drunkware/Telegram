@@ -301,7 +301,7 @@ public class MessageObject {
                 // So every two spaces will be replaced by one space and one non-breaking space that way we can reserve the spaces and also allow word wrapping.
                 messageText = messageText.toString().replace("  ", " &nbsp;");
                 // Text between two * will be in BLUE and text between two ^ will be BIG size
-                messageText = messageText.toString().replaceAll("\\*\\*(.+?)\\*\\*", "<big>$1</big>");
+                messageText = messageText.toString().replaceAll("\\*\\*(.+?)\\*\\*", "<b>$1</b>");
                 messageText = messageText.toString().replaceAll("\\*b(.+?)\\*\\*", "<font color='blue'>$1</font>");
                 messageText = messageText.toString().replaceAll("\\*r(.+?)\\*\\*", "<font color='red'>$1</font>");
                 messageText = messageText.toString().replaceAll("\\*w(.+?)\\*\\*", "<font color='#ffffff'>$1</font>");
