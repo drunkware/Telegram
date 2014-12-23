@@ -542,4 +542,5 @@
     <string name="showAndroidEmoji">اعرض فيسات الاندرويد</string>
     <string name="PhotoQualityInfo">القيمة هنا تستخدم مع الصور الجديدة فقط، القيم العالية تعطي جودة اعلى لكن حجم ملف اكبر.\n\n* نسبة 80% عادة تقدم توازن بين الجودة والحجم.</string>
     <string name="disableTabletMode">عطل عرض اللوحي</string>
+    <string name="disableTabletModeInfo">اعد تشغيل البرنامج عند تغيير الخيارِ</string>
 </resources>

@@ -30,6 +30,7 @@ import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.Adapters.BaseFragmentAdapter;
 import org.telegram.ui.Cells.TextCheckCell;
 import org.telegram.ui.Cells.TextDetailSettingsCell;
+import org.telegram.ui.Cells.TextInfoCheckCell;
 
 public class SettingsUltraFeaturesActivity extends BaseFragment {
     private ListView listView;
@@ -46,7 +47,9 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
         enableMarkdownRow = rowCount++;
         PhotoQualityRow = rowCount++;
         showAndroidEmojiRow = rowCount++;
-        disableTabletModeRow = rowCount++;
+        if ( ApplicationLoader.applicationContext.getResources().getBoolean(R.bool.isTablet) ){ // Only enable this option if it is a tablet
+            disableTabletModeRow = rowCount++;
+        }
 
         return super.onFragmentCreate();
     }
@@ -157,6 +160,8 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                     }
                     if (view instanceof TextCheckCell) {
                         ((TextCheckCell) view).setChecked(!enabled);
+                    } else if (view instanceof TextInfoCheckCell) {
+                        ((TextInfoCheckCell) view).setChecked(!enabled);
                     }
                 }
             });
@@ -219,8 +224,6 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                     checkCell.setTextAndCheck(LocaleController.getString("EnableMarkdown", R.string.EnableMarkdown), preferences.getBoolean("view_markdown", false), true);
                 } else if (i == showAndroidEmojiRow) {
                     checkCell.setTextAndCheck(LocaleController.getString("showAndroidEmoji", R.string.showAndroidEmoji), preferences.getBoolean("showAndroidEmoji", false), true);
-                } else if (i == disableTabletModeRow) {
-                    checkCell.setTextAndCheck(LocaleController.getString("disableTabletMode", R.string.disableTabletMode), preferences.getBoolean("disableTabletMode", false), true);
                 }
             } else if (type == 1) {
                 if (view == null) {
@@ -233,16 +236,27 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                     String value = Integer.toString(preferences.getInt("PhotoQuality", 80)) + "%";
                     textCell.setTextAndValue(LocaleController.getString("PhotoQuality", R.string.PhotoQuality), value, true);
                 }
+            } else if (type == 2) {
+                if (view == null) {
+                    view = new TextInfoCheckCell(mContext);
+                }
+                TextInfoCheckCell checkCell = (TextInfoCheckCell) view;
+                SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
+                if (i == disableTabletModeRow) {
+                    checkCell.setTextInfoAndCheck(LocaleController.getString("disableTabletMode", R.string.disableTabletMode), LocaleController.getString("disableTabletModeInfo", R.string.disableTabletModeInfo), preferences.getBoolean("disableTabletMode", false), true);
+                }
             }
             return view;
         }
 
         @Override
         public int getItemViewType(int i) {
-            if (i == enableMarkdownRow || i == showAndroidEmojiRow || i == disableTabletModeRow) {
+            if (i == enableMarkdownRow || i == showAndroidEmojiRow) {
                 return 0;
             } else if (i == PhotoQualityRow) {
                 return 1;
+            } else if ( i == disableTabletModeRow) {
+                return 2;
             } else {
                 return 9;
             }
