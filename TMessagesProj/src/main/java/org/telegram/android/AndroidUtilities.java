@@ -273,7 +273,12 @@ public class AndroidUtilities {
 
     public static boolean isTablet() {
         if (isTablet == null) {
-            isTablet = ApplicationLoader.applicationContext.getResources().getBoolean(R.bool.isTablet);
+            // If disableTabletMode is enabled return false (treat it as phone)
+            if (ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE).getBoolean("disableTabletMode", false)) {
+                isTablet = false;
+            } else {
+                isTablet = ApplicationLoader.applicationContext.getResources().getBoolean(R.bool.isTablet);
+            }
         }
         return isTablet;
     }

@@ -37,6 +37,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
     private int enableMarkdownRow;
     private int PhotoQualityRow;
     private int showAndroidEmojiRow;
+    private int disableTabletModeRow;
 
     private int rowCount = 0;
 
@@ -45,6 +46,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
         enableMarkdownRow = rowCount++;
         PhotoQualityRow = rowCount++;
         showAndroidEmojiRow = rowCount++;
+        disableTabletModeRow = rowCount++;
 
         return super.onFragmentCreate();
     }
@@ -98,6 +100,12 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                         SharedPreferences.Editor editor = preferences.edit();
                         enabled = preferences.getBoolean("showAndroidEmoji", false);
                         editor.putBoolean("showAndroidEmoji", !enabled);
+                        editor.commit();
+                    } else if (i == disableTabletModeRow) {
+                        SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = preferences.edit();
+                        enabled = preferences.getBoolean("disableTabletMode", false);
+                        editor.putBoolean("disableTabletMode", !enabled);
                         editor.commit();
                     } else if (i == PhotoQualityRow) {
                         final View layout = inflater.inflate(R.layout.settings_seekbar_dialog_layout, (ViewGroup) fragmentView.findViewById(R.id.seekBar_Dialog_Layout));
@@ -175,7 +183,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
 
         @Override
         public boolean isEnabled(int i) {
-            return (i == enableMarkdownRow || i == PhotoQualityRow || i == showAndroidEmojiRow);
+            return (i == enableMarkdownRow || i == PhotoQualityRow || i == showAndroidEmojiRow || i == disableTabletModeRow);
         }
 
         @Override
@@ -211,6 +219,8 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                     checkCell.setTextAndCheck(LocaleController.getString("EnableMarkdown", R.string.EnableMarkdown), preferences.getBoolean("view_markdown", false), true);
                 } else if (i == showAndroidEmojiRow) {
                     checkCell.setTextAndCheck(LocaleController.getString("showAndroidEmoji", R.string.showAndroidEmoji), preferences.getBoolean("showAndroidEmoji", false), true);
+                } else if (i == disableTabletModeRow) {
+                    checkCell.setTextAndCheck(LocaleController.getString("disableTabletMode", R.string.disableTabletMode), preferences.getBoolean("disableTabletMode", false), true);
                 }
             } else if (type == 1) {
                 if (view == null) {
@@ -229,7 +239,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
 
         @Override
         public int getItemViewType(int i) {
-            if (i == enableMarkdownRow || i == showAndroidEmojiRow) {
+            if (i == enableMarkdownRow || i == showAndroidEmojiRow || i == disableTabletModeRow) {
                 return 0;
             } else if (i == PhotoQualityRow) {
                 return 1;

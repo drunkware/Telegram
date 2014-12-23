@@ -538,4 +538,5 @@
     <string name="PhotoQuality">Photo Quality</string>
     <string name="showAndroidEmoji">Show Android Emoji</string>
     <string name="PhotoQualityInfo">This setting only applies to new photos, higher value means better quality but also means bigger file size. \n\n* 80% is usually a good balance between size and quality.</string>
+    <string name="disableTabletMode">Disable Tablet view</string>
 </resources>
