@@ -214,7 +214,6 @@
     <string name="TextSize">Messages Text Size</string>
     <string name="AskAQuestion">Ask a Question</string>
     <string name="EnableAnimations">Enable Animations</string>
-    <string name="EnableMarkdown">Enable Markdown</string>
     <string name="Unblock">Unblock</string>
     <string name="UnblockText">Tap and hold on user to unblock.</string>
     <string name="NoBlocked">No blocked users yet</string>
@@ -391,8 +390,6 @@
     <string name="Copy">Copy</string>
     <string name="Delete">Delete</string>
     <string name="Forward">Forward</string>
-    <string name="QuoteForward">Quote and Forward</string>
-    <string name="Share">Share</string>
     <string name="Retry">Retry</string>
     <string name="FromCamera">From camera</string>
     <string name="FromGalley">From gallery</string>
@@ -570,7 +567,10 @@
     <string name="formatterDay12H">h:mm a</string>
     <string name="formatDateAtTime">%1$s at %2$s</string>
     <!--UltraSettings-->
+    <string name="QuoteForward">Quote and Forward</string>
+    <string name="Share">Share</string>
     <string name="UltraSettings">Ultra Settings</string>
+    <string name="EnableMarkdown">Enable Markdown</string>
     <string name="PhotoQuality">Photo Quality</string>
     <string name="showAndroidEmoji">Show Android Emoji</string>
     <string name="PhotoQualityInfo">This setting only applies to new photos, higher value means better quality but also means bigger file size. \n\n* 80% is usually a good balance between size and quality.</string>

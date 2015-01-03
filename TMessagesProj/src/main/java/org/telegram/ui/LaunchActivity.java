@@ -1050,8 +1050,8 @@ public class LaunchActivity extends Activity implements ActionBarLayout.ActionBa
             rightActionBarLayout.onResume();
             layersActionBarLayout.onResume();
         }
-        Utilities.checkForCrashes(this);
-        Utilities.checkForUpdates(this);
+//        Utilities.checkForCrashes(this);  // Disabled NOT USING HOCKEY
+//        Utilities.checkForUpdates(this);  // Disabled NOT USING HOCKEY
         ApplicationLoader.mainInterfacePaused = false;
         ConnectionsManager.getInstance().setAppPaused(false, false);
         updateCurrentConnectionState();

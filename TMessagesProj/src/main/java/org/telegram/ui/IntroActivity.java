@@ -228,8 +228,8 @@ public class IntroActivity extends Activity {
             }
             justCreated = false;
         }
-        Utilities.checkForCrashes(this);
-        Utilities.checkForUpdates(this);
+//        Utilities.checkForCrashes(this);  // Disabled NOT USING HOCKEY
+//        Utilities.checkForUpdates(this);  // Disabled NOT USING HOCKEY
     }
 
     private class IntroAdapter extends PagerAdapter {

@@ -176,8 +176,7 @@ public class AvatarDrawable extends Drawable {
                 }
                 lastch = lastName.substring(a, a + 1);
             }
-            text += lastch;
- // TODO:           text += "\u200C" + lastName.substring(0, 1);    // Adding a Zero-width non-joiner (U+200C) to prevent letters from joining when using languages such as Arabic.
+            text += "\u200C" + lastch;    // Adding a Zero-width non-joiner (U+200C) to prevent letters from joining when using languages such as Arabic.
         }
         if (text.length() > 0) {
             text = text.toUpperCase();

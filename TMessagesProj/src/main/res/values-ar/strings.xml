@@ -28,9 +28,6 @@
     <string name="LastName">اسم العائلة</string>
     <string name="CancelRegistration">إلغاء التسجيل</string>
     <!--chats view-->
-    <string name="Chats">الدردشات</string>
-    <string name="Search">بحث</string>
-    <string name="NewMessages">الرسائل الجديدة</string>
     <string name="Settings">الإعدادات</string>
     <string name="Contacts">جهات الاتصال</string>
     <string name="NewGroup">مجموعة جديدة</string>
@@ -217,7 +214,6 @@
     <string name="TextSize">حجم نص الرسائل</string>
     <string name="AskAQuestion">اسأل سؤالًا</string>
     <string name="EnableAnimations">تفعيل التأثيرات المتحركة</string>
-    <string name="EnableMarkdown">تفعيل رموز التنسيق</string>
     <string name="Unblock">إلغاء الحظر</string>
     <string name="UnblockText">اضغط بإستمرار على المستخدم لإلغاء الحظر</string>
     <string name="NoBlocked">لا توجد جهات اتصال محظورة</string>
@@ -394,8 +390,6 @@
     <string name="Copy">نسخ</string>
     <string name="Delete">حذف</string>
     <string name="Forward">إعادة توجيه</string>
-    <string name="QuoteForward">إعادة توجيه باقتباس</string>
-    <string name="Share">مشاركة</string>
     <string name="Retry">إعادة المحاولة</string>
     <string name="FromCamera">من الكاميرا</string>
     <string name="FromGalley">من الجهاز</string>
@@ -573,7 +567,10 @@
     <string name="formatterDay12H">h:mm a</string>
     <string name="formatDateAtTime">%1$s الساعة %2$s</string>
     <!--UltraSettings-->
+    <string name="QuoteForward">إعادة توجيه باقتباس</string>
+    <string name="Share">مشاركة</string>
     <string name="UltraSettings">اعدادات الترا</string>
+    <string name="EnableMarkdown">تفعيل رموز التنسيق</string>
     <string name="PhotoQuality">جودة الصور</string>
     <string name="showAndroidEmoji">اعرض فيسات الاندرويد</string>
     <string name="PhotoQualityInfo">القيمة هنا تستخدم مع الصور الجديدة فقط، القيم العالية تعطي جودة اعلى لكن حجم ملف اكبر.\n\n* نسبة 80% عادة تقدم توازن بين الجودة والحجم.</string>
