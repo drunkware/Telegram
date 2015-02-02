@@ -3104,8 +3104,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                         } else if (type == 3) {
                             items = new CharSequence[]{LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Copy", R.string.Copy), LocaleController.getString("Delete", R.string.Delete)};
                         } else if (type == 4) {
-                            items = new CharSequence[]{LocaleController.getString(selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaDocument ? "ShareFile" : "SaveToGallery",
-                                    selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaDocument ? R.string.ShareFile : R.string.SaveToGallery), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
                             items = new CharSequence[]{LocaleController.getString(selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaDocument ? "SaveToDownloads" : "SaveToGallery",
                                 selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaDocument ? R.string.SaveToDownloads : R.string.SaveToGallery), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Share", R.string.Share), LocaleController.getString("Delete", R.string.Delete)};
                         } else if (type == 5) {
@@ -3318,10 +3316,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             } else if (selectedObject.type == 1) {
                 MediaController.saveFile(path, getParentActivity(), 0, null);
             } else if (selectedObject.type == 8 || selectedObject.type == 9) {
-                Intent intent = new Intent(Intent.ACTION_SEND);
-                intent.setType(selectedObject.messageOwner.media.document.mime_type);
-                intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(path)));
-                getParentActivity().startActivity(Intent.createChooser(intent, ""));
+                MediaController.saveFile(path, getParentActivity(), 2, selectedObject.getDocumentName());
             }
         } else if (option == 5) {
             File locFile = null;

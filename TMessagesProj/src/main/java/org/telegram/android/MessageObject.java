@@ -8,6 +8,7 @@
 
 package org.telegram.android;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
 import android.text.Html;
