@@ -47,7 +47,9 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
     public boolean onFragmentCreate() {
         enableMarkdownRow = rowCount++;
         PhotoQualityRow = rowCount++;
-        showAndroidEmojiRow = rowCount++;
+        if (android.os.Build.VERSION.SDK_INT >= 19) {
+            showAndroidEmojiRow = rowCount++;
+        }
         if ( ApplicationLoader.applicationContext.getResources().getBoolean(R.bool.isTablet) ){ // Only enable this option if it is a tablet
             disableTabletModeRow = rowCount++;
         }
@@ -100,12 +102,14 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                         enabled = preferences.getBoolean("view_markdown", false);
                         editor.putBoolean("view_markdown", !enabled);
                         editor.commit();
+                        ApplicationLoader.MARK_DOWN = !enabled;
                     } else if (i == showAndroidEmojiRow) {
                         SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
                         SharedPreferences.Editor editor = preferences.edit();
                         enabled = preferences.getBoolean("showAndroidEmoji", false);
                         editor.putBoolean("showAndroidEmoji", !enabled);
                         editor.commit();
+                        ApplicationLoader.SHOW_ANDROID_EMOJI = !enabled;
                     } else if (i == disableTabletModeRow) {
                         SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
                         SharedPreferences.Editor editor = preferences.edit();
@@ -225,9 +229,9 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                 TextCheckCell checkCell = (TextCheckCell) view;
                 SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
                 if (i == enableMarkdownRow) {
-                    checkCell.setTextAndCheck(LocaleController.getString("EnableMarkdown", R.string.EnableMarkdown), preferences.getBoolean("view_markdown", false), true);
+                    checkCell.setTextAndCheck(LocaleController.getString("EnableMarkdown", R.string.EnableMarkdown), ApplicationLoader.MARK_DOWN, true);
                 } else if (i == showAndroidEmojiRow) {
-                    checkCell.setTextAndCheck(LocaleController.getString("showAndroidEmoji", R.string.showAndroidEmoji), preferences.getBoolean("showAndroidEmoji", false), true);
+                    checkCell.setTextAndCheck(LocaleController.getString("showAndroidEmoji", R.string.showAndroidEmoji), ApplicationLoader.SHOW_ANDROID_EMOJI, true);
                 }
             } else if (type == 1) {
                 if (view == null) {
@@ -256,11 +260,11 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                 TextDetailSettingsCell textCell = (TextDetailSettingsCell) view;
 
                 if (i == highlighWordsRow) {
-                    String value="";
-                    if (value.isEmpty()) {
-                        value = "فهد" ;
+                    String value;
+                    if (ApplicationLoader.WORDS_HIGHLIGHT.length() > 0) {
+                        value = ApplicationLoader.WORDS_HIGHLIGHT;
                     } else {
-                        value = LocaleController.getString("UsernameEmpty", R.string.UsernameEmpty);
+                        value  = LocaleController.getString("HighlightWordsEmpty", R.string.HighlightWordsEmpty);
                     }
                     textCell.setTextAndValue(LocaleController.getString("HighlightWords", R.string.HighlightWords), value, true);
                 }

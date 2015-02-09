@@ -8,6 +8,7 @@
 
 package org.telegram.messenger;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Application;
 import android.app.PendingIntent;
@@ -57,6 +58,11 @@ public class ApplicationLoader extends Application {
 
     public static volatile boolean isScreenOn = false;
     public static volatile boolean mainInterfacePaused = true;
+
+    public static String WORDS_HIGHLIGHT;
+    public static String WORDS_HIGHLIGHT_COLOR = "#0000FF";
+    public static boolean MARK_DOWN;
+    public static boolean SHOW_ANDROID_EMOJI;
 
     public static void postInitApplication() {
         if (applicationInited) {
@@ -118,6 +124,10 @@ public class ApplicationLoader extends Application {
         NativeLoader.initNativeLibs(ApplicationLoader.applicationContext);
 
         applicationHandler = new Handler(applicationContext.getMainLooper());
+
+        WORDS_HIGHLIGHT = applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE).getString("HighLightWords", "");
+        MARK_DOWN = applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE).getBoolean("view_markdown", false);
+        SHOW_ANDROID_EMOJI = applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE).getBoolean("showAndroidEmoji", false);
 
         startPushService();
     }

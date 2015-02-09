@@ -592,4 +592,6 @@
     <string name="disableTabletMode">Disable Tablet view</string>
     <string name="disableTabletModeInfo">Restart the app after changing this option</string>
     <string name="HighlightWords">Name Highlight</string>
+    <string name="WordsToHighlight">Word to highlight</string>
+    <string name="HighlightWordsEmpty">None</string>
 </resources>

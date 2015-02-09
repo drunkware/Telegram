@@ -892,7 +892,7 @@ public class Emoji {
             return cs;
         }
         // If showAndroidEmoji is enabled don't replace anything
-        if (ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE).getBoolean("showAndroidEmoji", false)) {
+        if (ApplicationLoader.SHOW_ANDROID_EMOJI) {
             return cs;
         }
         Spannable s;
