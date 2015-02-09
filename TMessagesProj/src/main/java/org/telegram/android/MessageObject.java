@@ -299,12 +299,18 @@ public class MessageObject {
                 // To reserve all spaces since "fromHtml" will collapse all consecutive spaces into only 1.
                 // So every two spaces will be replaced by one space and one non-breaking space that way we can reserve the spaces and also allow word wrapping.
                 messageText = messageText.toString().replace("  ", " &nbsp;");
+
+                String strMatch = "فهد";
+                messageText = messageText.toString().replaceAll("(\\b)(" + strMatch + ")(\\b)", "$1<font color='blue'>$2</font>$3");
+
+
                 // Text between two * will be in BLUE and text between two ^ will be BIG size
                 messageText = messageText.toString().replaceAll("\\*\\*(.+?)\\*\\*", "<b>$1</b>");
                 messageText = messageText.toString().replaceAll("\\*b(.+?)\\*\\*", "<font color='blue'>$1</font>");
                 messageText = messageText.toString().replaceAll("\\*r(.+?)\\*\\*", "<font color='red'>$1</font>");
                 messageText = messageText.toString().replaceAll("\\*w(.+?)\\*\\*", "<font color='#ffffff'>$1</font>");
                 messageText = messageText.toString().replace("\n", "<br>");     // Change new line to something that Html will understand
+
                 messageText = Html.fromHtml(messageText.toString());
             }
             messageText = Emoji.replaceEmoji(messageText, textPaint.getFontMetricsInt(), AndroidUtilities.dp(20));

@@ -30,7 +30,7 @@ import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.Adapters.BaseFragmentAdapter;
 import org.telegram.ui.Cells.TextCheckCell;
 import org.telegram.ui.Cells.TextDetailSettingsCell;
-import org.telegram.ui.Cells.TextInfoCheckCell;
+import org.telegram.ui.Cells.TextUltraInfoCheckCell;
 
 public class SettingsUltraFeaturesActivity extends BaseFragment {
     private ListView listView;
@@ -39,6 +39,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
     private int PhotoQualityRow;
     private int showAndroidEmojiRow;
     private int disableTabletModeRow;
+    private int highlighWordsRow;
 
     private int rowCount = 0;
 
@@ -50,6 +51,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
         if ( ApplicationLoader.applicationContext.getResources().getBoolean(R.bool.isTablet) ){ // Only enable this option if it is a tablet
             disableTabletModeRow = rowCount++;
         }
+        highlighWordsRow = rowCount++;
 
         return super.onFragmentCreate();
     }
@@ -157,11 +159,13 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                                 editor.commit();
                             }
                         });
+                    } else if ( i == highlighWordsRow ) {
+                        presentFragment(new HighlightWordsActivity());
                     }
                     if (view instanceof TextCheckCell) {
                         ((TextCheckCell) view).setChecked(!enabled);
-                    } else if (view instanceof TextInfoCheckCell) {
-                        ((TextInfoCheckCell) view).setChecked(!enabled);
+                    } else if (view instanceof TextUltraInfoCheckCell) {
+                        ((TextUltraInfoCheckCell) view).setChecked(!enabled);
                     }
                 }
             });
@@ -188,7 +192,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
 
         @Override
         public boolean isEnabled(int i) {
-            return (i == enableMarkdownRow || i == PhotoQualityRow || i == showAndroidEmojiRow || i == disableTabletModeRow);
+            return (i == enableMarkdownRow || i == PhotoQualityRow || i == showAndroidEmojiRow || i == disableTabletModeRow || i == highlighWordsRow);
         }
 
         @Override
@@ -238,12 +242,27 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                 }
             } else if (type == 2) {
                 if (view == null) {
-                    view = new TextInfoCheckCell(mContext);
+                    view = new TextUltraInfoCheckCell(mContext);
                 }
-                TextInfoCheckCell checkCell = (TextInfoCheckCell) view;
+                TextUltraInfoCheckCell checkCell = (TextUltraInfoCheckCell) view;
                 SharedPreferences preferences = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
                 if (i == disableTabletModeRow) {
                     checkCell.setTextInfoAndCheck(LocaleController.getString("disableTabletMode", R.string.disableTabletMode), LocaleController.getString("disableTabletModeInfo", R.string.disableTabletModeInfo), preferences.getBoolean("disableTabletMode", false), true);
+                }
+            } else if (type == 3) {
+                if (view == null) {
+                    view = new TextDetailSettingsCell(mContext);
+                }
+                TextDetailSettingsCell textCell = (TextDetailSettingsCell) view;
+
+                if (i == highlighWordsRow) {
+                    String value="";
+                    if (value.isEmpty()) {
+                        value = "فهد" ;
+                    } else {
+                        value = LocaleController.getString("UsernameEmpty", R.string.UsernameEmpty);
+                    }
+                    textCell.setTextAndValue(LocaleController.getString("HighlightWords", R.string.HighlightWords), value, true);
                 }
             }
             return view;
@@ -257,6 +276,8 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                 return 1;
             } else if ( i == disableTabletModeRow) {
                 return 2;
+            } else if ( i == highlighWordsRow) {
+                return 3;
             } else {
                 return 9;
             }

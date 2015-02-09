@@ -21,7 +21,7 @@ import org.telegram.android.LocaleController;
 import org.telegram.ui.Components.FrameLayoutFixed;
 import org.telegram.ui.Components.Switch;
 
-public class TextInfoCheckCell extends FrameLayoutFixed {
+public class TextUltraInfoCheckCell extends FrameLayoutFixed {
 
     private TextView textView;
     private TextView infoTextView;
@@ -29,7 +29,7 @@ public class TextInfoCheckCell extends FrameLayoutFixed {
     private static Paint paint;
     private boolean needDivider;
 
-    public TextInfoCheckCell(Context context) {
+    public TextUltraInfoCheckCell(Context context) {
         super(context);
 
         if (paint == null) {
