@@ -300,6 +300,8 @@ public class MessageObject {
 
                 if (ApplicationLoader.WORDS_HIGHLIGHT.length() > 0) {
                     String strMatch = ApplicationLoader.WORDS_HIGHLIGHT;
+                    // Make the match case-insensitive, and replace semicolon with vertical bar
+                    strMatch = "(?i)" + strMatch.replaceAll(" *[;|؛] *", "|");
                     messageText = messageText.toString().replaceAll("(\\b)(" + strMatch + ")(\\b)", "$1<font color='" + ApplicationLoader.WORDS_HIGHLIGHT_COLOR + "'>$2</font>$3");
                 }
 

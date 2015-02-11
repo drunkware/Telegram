@@ -591,8 +591,8 @@
     <string name="PhotoQualityInfo">This setting only applies to new photos, higher value means better quality but also means bigger file size. \n\n* 80% is usually a good balance between size and quality.</string>
     <string name="disableTabletMode">Disable Tablet view</string>
     <string name="disableTabletModeInfo">Restart the app after changing this option</string>
-    <string name="HighlightWords">Word Highlight</string>
-    <string name="WordsToHighlight">Word to highlight</string>
+    <string name="HighlightWords">Words Highlight</string>
+    <string name="WordsToHighlight">Words to highlight</string>
     <string name="HighlightWordsEmpty">None</string>
-    <string name="HighlightWordsHelp">"You can choose a word that you would like to be highlighted in chat messages. It can be your name or any other word.&lt;br/&gt;&lt;br/&gt;Here is an example with no highlighting:&lt;br/&gt;&lt;b&gt;I went with %1$s to a restaurant&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;With highlighting:&lt;br/&gt;&lt;b&gt;I went with &lt;font color=&#39;%2$s&#39;&gt;%1$s&lt;/font&gt; to a restaurant&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;This feature is specially useful with chat groups that are active, so it helps you skim through the chat and only look at messages that mention the chosen word."</string>
+    <string name="HighlightWordsHelp">"You can set a word or multiple words separated by a semicolon that you would like to be highlighted in chat messages. It can be your name or any other word.&lt;br/&gt;&lt;br/&gt;Here is an example with no highlighting:&lt;br/&gt;&lt;b&gt;I went with %1$s to a restaurant&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;With highlighting:&lt;br/&gt;&lt;b&gt;I went with &lt;font color=&#39;%2$s&#39;&gt;%1$s&lt;/font&gt; to a restaurant&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;This feature is specially useful with chat groups that are active, so it helps you skim through the chat and only look at messages that mention the chosen words."</string>
 </resources>

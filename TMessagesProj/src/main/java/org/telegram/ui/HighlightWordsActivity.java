@@ -159,7 +159,7 @@ public class HighlightWordsActivity extends BaseFragment {
 
             // Save the new value
             SharedPreferences.Editor editor = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE).edit();
-            editor.putString("HighLightWords", ApplicationLoader.WORDS_HIGHLIGHT);
+            editor.putString("HighLightWords", newWords);
             editor.commit();
         }
 
