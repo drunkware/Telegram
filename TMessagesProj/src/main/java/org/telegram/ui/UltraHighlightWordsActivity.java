@@ -33,6 +33,7 @@ import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.ActionBarMenu;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.Adapters.BaseFragmentAdapter;
+import org.telegram.ui.Cells.DividerCell;
 import org.telegram.ui.Cells.TextColorCell;
 import org.telegram.ui.Cells.TextFieldCell;
 import org.telegram.ui.Cells.TextInfoPrivacyCell;
@@ -44,6 +45,7 @@ public class UltraHighlightWordsActivity extends BaseFragment {
     private int colorValue;
 
     private int highlightWordRow;
+    private int dividerRow;
     private int colorRow;
     private int helpRow;
     private int rowCount = 0;
@@ -53,6 +55,7 @@ public class UltraHighlightWordsActivity extends BaseFragment {
     @Override
     public boolean onFragmentCreate() {
         highlightWordRow = rowCount++;
+        dividerRow = rowCount++;
         colorRow = rowCount++;
         helpRow = rowCount++;
 
@@ -85,10 +88,8 @@ public class UltraHighlightWordsActivity extends BaseFragment {
             highlightWordField.setFieldText(ApplicationLoader.WORDS_HIGHLIGHT);
             highlightWordField.setBackgroundColor(0xffffffff);
 
-
             fragmentView = new FrameLayout(getParentActivity());
             FrameLayout frameLayout = (FrameLayout) fragmentView;
-         //   frameLayout.setBackgroundColor(0xfff0f0f0);
 
             listView = new ListView(getParentActivity());
             listView.setDivider(null);
@@ -155,7 +156,7 @@ public class UltraHighlightWordsActivity extends BaseFragment {
 
         @Override
         public boolean isEnabled(int i) {
-            return i == colorRow;
+            return (i == colorRow);
         }
 
         @Override
@@ -202,6 +203,10 @@ public class UltraHighlightWordsActivity extends BaseFragment {
                 }
                 TextColorCell textcolorCell = (TextColorCell) view;
                 textcolorCell.setTextAndColor(LocaleController.getString("HighlightColor", R.string.HighlightColor), colorValue, true);
+            } else if (viewType == 3) {
+                if (view == null) {
+                    view = new DividerCell(mContext);
+                }
             }
             return view;
         }
@@ -214,13 +219,15 @@ public class UltraHighlightWordsActivity extends BaseFragment {
                 return 1;
             } else if (i == colorRow) {
                 return 2;
+            } else if (i == dividerRow) {
+                return 3;
             }
-            return 0;
+            return 3;
         }
 
         @Override
         public int getViewTypeCount() {
-            return 3;
+            return 4;
         }
 
         @Override
@@ -253,7 +260,6 @@ public class UltraHighlightWordsActivity extends BaseFragment {
         if (!ApplicationLoader.WORDS_HIGHLIGHT.equals(newWords)) {
             // Change the global variable to the new value
             ApplicationLoader.WORDS_HIGHLIGHT = newWords;
-//            ApplicationLoader.WORDS_HIGHLIGHT_COLOR = colorCell.get;
 
             // Save the new value
             SharedPreferences.Editor editor = ApplicationLoader.applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE).edit();

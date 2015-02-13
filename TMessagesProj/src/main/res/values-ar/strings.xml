@@ -591,7 +591,7 @@
     <string name="PhotoQualityInfo">القيمة هنا تستخدم مع الصور الجديدة فقط، القيم العالية تعطي جودة اعلى لكن حجم ملف اكبر.\n\n* نسبة 80% عادة تقدم توازن بين الجودة والحجم.</string>
     <string name="disableTabletMode">عطل عرض اللوحي</string>
     <string name="disableTabletModeInfo">اعد تشغيل البرنامج عند تغيير الخيارِ</string>
-    <string name="HighlightWords">تمييز كلمات</string>
+    <string name="HighlightWords">تمييز الكلمات</string>
     <string name="WordsToHighlight">الكلمات المراد تمييزها</string>
     <string name="HighlightWordsEmpty">لا يوجد</string>
     <string name="HighlightWordsHelp">"بإمكانك اختيار كلمة أو عدة كلمات مفصولة بفواصل منقوطة ليتم تمييزها بلون في المحادثات. بالإمكان استخدام اسمك أو أية كلمة أخرى.&lt;br/&gt;&lt;br/&gt;هذا مثال لجملة بدون تمييز:&lt;br/&gt;&lt;font color=&#39;#000000&#39;&gt;ذهبت مع %1$s إلى المطعم&lt;/font&gt;&lt;br/&gt;&lt;br/&gt;مع التمييز:&lt;br/&gt;&lt;font color=&#39;#000000&#39;&gt;ذهبت مع &lt;/font&gt;&lt;font color=&#39;%2$s&#39;&gt;%1$s&lt;/font&gt;&lt;font color=&#39;#000000&#39;&gt; إلى المطعم&lt;/font&gt;&lt;br/&gt;&lt;br/&gt;هذه الخاصية مفيدة مع المجموعات النشطة إذ تساعدك على التصفح السريع وقراءة الرسائل التي تحوي الكلمات المختارة."</string>
