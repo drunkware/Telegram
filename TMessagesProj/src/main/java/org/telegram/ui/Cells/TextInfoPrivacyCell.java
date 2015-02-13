@@ -9,6 +9,7 @@
 package org.telegram.ui.Cells;
 
 import android.content.Context;
+import android.text.Spanned;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.widget.FrameLayout;
@@ -45,6 +46,10 @@ public class TextInfoPrivacyCell extends FrameLayout {
     }
 
     public void setText(String text) {
+        textView.setText(text);
+    }
+
+    public void setText(Spanned text) {
         textView.setText(text);
     }
 

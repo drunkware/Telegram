@@ -60,7 +60,7 @@ public class ApplicationLoader extends Application {
     public static volatile boolean mainInterfacePaused = true;
 
     public static String WORDS_HIGHLIGHT;
-    public static String WORDS_HIGHLIGHT_COLOR = "#0000FF";
+    public static int WORDS_HIGHLIGHT_COLOR;
     public static boolean MARK_DOWN;
     public static boolean SHOW_ANDROID_EMOJI;
 
@@ -125,9 +125,11 @@ public class ApplicationLoader extends Application {
 
         applicationHandler = new Handler(applicationContext.getMainLooper());
 
-        WORDS_HIGHLIGHT = applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE).getString("HighLightWords", "");
-        MARK_DOWN = applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE).getBoolean("view_markdown", false);
-        SHOW_ANDROID_EMOJI = applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE).getBoolean("showAndroidEmoji", false);
+        SharedPreferences preferences = applicationContext.getSharedPreferences("Ultra", Activity.MODE_PRIVATE);
+        WORDS_HIGHLIGHT = preferences.getString("HighlightWords", "");
+        WORDS_HIGHLIGHT_COLOR = preferences.getInt("HighlightColor", 0xFF0055FF);
+        MARK_DOWN = preferences.getBoolean("view_markdown", false);
+        SHOW_ANDROID_EMOJI = preferences.getBoolean("showAndroidEmoji", false);
 
         startPushService();
     }

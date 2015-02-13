@@ -47,11 +47,15 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
     public boolean onFragmentCreate() {
         enableMarkdownRow = rowCount++;
         PhotoQualityRow = rowCount++;
-        if (android.os.Build.VERSION.SDK_INT >= 19) {
+        if (android.os.Build.VERSION.SDK_INT >= 19) { // Only enable this option for Kitkat and newer android versions
             showAndroidEmojiRow = rowCount++;
+        } else {
+            showAndroidEmojiRow = -1;
         }
         if ( ApplicationLoader.applicationContext.getResources().getBoolean(R.bool.isTablet) ){ // Only enable this option if it is a tablet
             disableTabletModeRow = rowCount++;
+        } else {
+            disableTabletModeRow = -1;
         }
         highlighWordsRow = rowCount++;
 
@@ -164,7 +168,7 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                             }
                         });
                     } else if ( i == highlighWordsRow ) {
-                        presentFragment(new HighlightWordsActivity());
+                        presentFragment(new UltraHighlightWordsActivity());
                     }
                     if (view instanceof TextCheckCell) {
                         ((TextCheckCell) view).setChecked(!enabled);
@@ -282,14 +286,14 @@ public class SettingsUltraFeaturesActivity extends BaseFragment {
                 return 2;
             } else if ( i == highlighWordsRow) {
                 return 3;
-            } else {
-                return 9;
             }
+
+            return -1;
         }
 
         @Override
         public int getViewTypeCount() {
-            return 5;
+            return 4;
         }
 
         @Override
