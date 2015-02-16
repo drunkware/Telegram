@@ -227,6 +227,38 @@ public class LocaleController {
         sortedLanguages.add(localeInfo);
         languagesDict.put(localeInfo.shortName, localeInfo);
 
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "Русский";
+        localeInfo.nameEnglish = "Russian";
+        localeInfo.shortName = "ru";
+        localeInfo.pathToFile = null;
+        sortedLanguages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "پارسی";
+        localeInfo.nameEnglish = "Persian";
+        localeInfo.shortName = "fa";
+        localeInfo.pathToFile = null;
+        sortedLanguages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "中文";
+        localeInfo.nameEnglish = "Chinese";
+        localeInfo.shortName = "zh";
+        localeInfo.pathToFile = null;
+        sortedLanguages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
+        localeInfo = new LocaleInfo();
+        localeInfo.name = "अंग्रेजी";
+        localeInfo.nameEnglish = "Hindi";
+        localeInfo.shortName = "hi";
+        localeInfo.pathToFile = null;
+        sortedLanguages.add(localeInfo);
+        languagesDict.put(localeInfo.shortName, localeInfo);
+
         loadOtherLanguages();
 
         for (LocaleInfo locale : otherLanguages) {
@@ -704,7 +736,7 @@ public class LocaleController {
         if (lang == null) {
             lang = "en";
         }
-        isRTL = lang.toLowerCase().equals("ar");
+        isRTL = lang.toLowerCase().equals("ar") | lang.toLowerCase().equals("fa");
         nameDisplayOrder = lang.toLowerCase().equals("ko") ? 2 : 1;
         String formatString = getStringInternal("formatterMonth", R.string.formatterMonth);
         if (formatString == null || formatString.length() == 0) {
