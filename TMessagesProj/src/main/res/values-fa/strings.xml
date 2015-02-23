@@ -602,4 +602,8 @@ http://telegram.org/update</string>
     <string name="HighlightWordsEmpty">None</string>
     <string name="HighlightWordsHelp">"You can set a word or multiple words separated by a semicolon that you would like to be highlighted in chat messages. It can be your name or any other word.&lt;br/&gt;&lt;br/&gt;Here is an example with no highlighting:&lt;br/&gt;&lt;font color=&#39;#000000&#39;&gt;I went with %1$s to a restaurant&lt;/font&gt;&lt;br/&gt;&lt;br/&gt;With highlighting:&lt;br/&gt;&lt;font color=&#39;#000000&#39;&gt;I went with &lt;/font&gt;&lt;font color=&#39;%2$d&#39;&gt;%1$s&lt;/font&gt;&lt;font color=&#39;#000000&#39;&gt; to a restaurant&lt;/font&gt;&lt;br/&gt;&lt;br/&gt;This feature is specially useful with chat groups that are active, so it helps you skim through the chat and only look at messages that mention the chosen words."</string>
     <string name="HighlightColor">Highlight Color</string>
+    <string name="Megabyte">MB</string>
+    <string name="Byte">B</string>
+    <string name="Kilobyte">KB</string>
+    <string name="Gigabyte">GB</string>
 </resources>

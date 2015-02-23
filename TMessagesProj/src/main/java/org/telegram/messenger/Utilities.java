@@ -29,6 +29,8 @@ import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.CrashManagerListener;
 import net.hockeyapp.android.UpdateManager;
 
+import org.telegram.android.LocaleController;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -681,13 +683,13 @@ public class Utilities {
 
     public static String formatFileSize(long size) {
         if (size < 1024) {
-            return String.format("%d B", size);
+            return String.format("%d " + LocaleController.getString("Byte", R.string.Byte), size);
         } else if (size < 1024 * 1024) {
-            return String.format("%.1f KB", size / 1024.0f);
+            return String.format("%.1f " + LocaleController.getString("Kilobyte", R.string.Kilobyte), size / 1024.0f);
         } else if (size < 1024 * 1024 * 1024) {
-            return String.format("%.1f MB", size / 1024.0f / 1024.0f);
+            return String.format("%.1f " + LocaleController.getString("Megabyte", R.string.Megabyte), size / 1024.0f / 1024.0f);
         } else {
-            return String.format("%.1f GB", size / 1024.0f / 1024.0f / 1024.0f);
+            return String.format("%.1f " + LocaleController.getString("Gigabyte", R.string.Gigabyte), size / 1024.0f / 1024.0f / 1024.0f);
         }
     }
 

@@ -294,6 +294,10 @@ public class MessageObject {
             messageText = Emoji.fixSBEmoji(messageText);    //Fix SB encoding if needed before displaying the message
 
             if (ApplicationLoader.MARK_DOWN == true || ApplicationLoader.WORDS_HIGHLIGHT.length() > 0) {
+                //messageText = Html.escapeHtml(messageText);
+                //messageText = TextUtils.htmlEncode(messageText.toString());
+                messageText = messageText.toString().replace("<", "&lt;");
+
                 // To reserve all spaces since "fromHtml" will collapse all consecutive spaces into only 1.
                 // So every two spaces will be replaced by one space and one non-breaking space that way we can reserve the spaces and also allow word wrapping.
                 messageText = messageText.toString().replace("  ", " &nbsp;");
