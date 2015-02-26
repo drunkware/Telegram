@@ -267,7 +267,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
     }
 
     @Override
-    public View createView(LayoutInflater inflater, ViewGroup container) {
+    public View createView(LayoutInflater inflater) {
         if (fragmentView == null) {
             actionBar.setBackgroundColor(AvatarDrawable.getProfileBackColorForId(5));
             actionBar.setItemsBackground(AvatarDrawable.getButtonColorForId(5));
@@ -495,7 +495,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                     } else if (i == telegramFaqRow) {
                         try {
                             Intent pickIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(LocaleController.getString("TelegramFaqUrl", R.string.TelegramFaqUrl)));
-                            getParentActivity().startActivity(pickIntent);
+                            getParentActivity().startActivityForResult(pickIntent, 500);
                         } catch (Exception e) {
                             FileLog.e("tmessages", e);
                         }
@@ -708,6 +708,11 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
     @Override
     protected void onDialogDismiss() {
         MediaController.getInstance().checkAutodownloadSettings();
+    }
+
+    @Override
+    public void updatePhotoAtIndex(int index) {
+
     }
 
     @Override
@@ -971,13 +976,15 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         }
         AvatarDrawable avatarDrawable = new AvatarDrawable(user, true);
         avatarDrawable.setColor(0xff5c98cd);
-        avatarImage.setImage(photo, "50_50", avatarDrawable);
-        avatarImage.imageReceiver.setVisible(!PhotoViewer.getInstance().isShowingImage(photoBig), false);
+        if (avatarImage != null) {
+            avatarImage.setImage(photo, "50_50", avatarDrawable);
+            avatarImage.imageReceiver.setVisible(!PhotoViewer.getInstance().isShowingImage(photoBig), false);
 
-        nameTextView.setText(ContactsController.formatName(user.first_name, user.last_name));
-        onlineTextView.setText(LocaleController.getString("Online", R.string.Online));
+            nameTextView.setText(ContactsController.formatName(user.first_name, user.last_name));
+            onlineTextView.setText(LocaleController.getString("Online", R.string.Online));
 
-        avatarImage.imageReceiver.setVisible(!PhotoViewer.getInstance().isShowingImage(photoBig), false);
+            avatarImage.imageReceiver.setVisible(!PhotoViewer.getInstance().isShowingImage(photoBig), false);
+        }
     }
 
     private void sendLogs() {
@@ -998,7 +1005,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             i.putExtra(Intent.EXTRA_EMAIL, new String[]{BuildVars.SEND_LOGS_EMAIL});
             i.putExtra(Intent.EXTRA_SUBJECT, "last logs");
             i.putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris);
-            getParentActivity().startActivity(Intent.createChooser(i, "Select email application."));
+            getParentActivity().startActivityForResult(Intent.createChooser(i, "Select email application."), 500);
         } catch (Exception e) {
             e.printStackTrace();
         }
