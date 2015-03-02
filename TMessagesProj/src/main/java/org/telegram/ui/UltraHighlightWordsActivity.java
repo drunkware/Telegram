@@ -63,7 +63,7 @@ public class UltraHighlightWordsActivity extends BaseFragment {
     }
 
     @Override
-    public View createView(LayoutInflater inflater, ViewGroup container) {
+    public View createView(LayoutInflater inflater) {
         if (fragmentView == null) {
             colorValue = ApplicationLoader.WORDS_HIGHLIGHT_COLOR;
             actionBar.setBackButtonImage(R.drawable.ic_ab_back);
