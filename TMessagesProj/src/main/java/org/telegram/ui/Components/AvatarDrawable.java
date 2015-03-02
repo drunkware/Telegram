@@ -182,19 +182,22 @@ public class AvatarDrawable extends Drawable {
                 }
                 lastch = lastName.substring(a, a + 1);
             }
-            text += "\u200C" + lastch;    // Adding a Zero-width non-joiner (U+200C) to prevent letters from joining when using languages such as Arabic.
-        } else { // if there is no last name (like group names) check if first name is two words
-            if (firstName != null && firstName.length() > 0) {
-                String lastch = null;
-                int a;
-                for (a = firstName.length() - 1; a >= 0; a--) {
-                    if (lastch != null && firstName.charAt(a) == ' ') {
+            if (Build.VERSION.SDK_INT >= 16) {
+                text += "\u200C" + lastch;
+            } else {
+                text += lastch;
+            }
+        } else if (firstName != null && firstName.length() > 0) {
+            for (int a = firstName.length() - 1; a >= 0; a--) {
+                if (firstName.charAt(a) == ' ') {
+                    if (a != firstName.length() - 1 && firstName.charAt(a + 1) != ' ') {
+                        if (Build.VERSION.SDK_INT >= 16) {
+                            text += "\u200C" + firstName.substring(a + 1, a + 2);
+                        } else {
+                            text += firstName.substring(a + 1, a + 2);
+                        }
                         break;
                     }
-                    lastch = firstName.substring(a, a + 1);
-                }
-                if (a > 0) {    // Make sure it is not a just single word
-                    text += "\u200C" + lastch;
                 }
             }
         }
