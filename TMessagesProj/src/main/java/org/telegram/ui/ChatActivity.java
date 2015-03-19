@@ -242,7 +242,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
 
     private final static int id_chat_compose_panel = 1000;
 
-    private boolean QuoteForward;
+    private static boolean QuoteForward;
 
     AdapterView.OnItemLongClickListener onItemLongClickListener = new AdapterView.OnItemLongClickListener() {
         @Override
@@ -1035,10 +1035,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             selectedMessagesCountTextView.setLayoutParams(layoutParams);
 
             if (currentEncryptedChat == null) {
-                actionModeViews.add(actionMode.addItem(copy, R.drawable.ic_ab_fwd_copy, R.drawable.bar_selector_mode, null, AndroidUtilities.dp(54)));
                 if (!isBroadcast) {
                     actionModeViews.add(actionMode.addItem(reply, R.drawable.ic_ab_reply, R.drawable.bar_selector_mode, null, AndroidUtilities.dp(54)));
                 }
+                actionModeViews.add(actionMode.addItem(quoteforward, R.drawable.ic_ab_fwd_quoteforward, R.drawable.bar_selector_mode, null, AndroidUtilities.dp(54)));
                 actionModeViews.add(actionMode.addItem(forward, R.drawable.ic_ab_fwd_forward, R.drawable.bar_selector_mode, null, AndroidUtilities.dp(54)));
                 actionModeViews.add(actionMode.addItem(copy, R.drawable.ic_ab_fwd_copy, R.drawable.bar_selector_mode, null, AndroidUtilities.dp(54)));
                 actionModeViews.add(actionMode.addItem(delete, R.drawable.ic_ab_fwd_delete, R.drawable.bar_selector_mode, null, AndroidUtilities.dp(54)));
@@ -2048,7 +2048,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 return;
             }
             if (forwardingMessages != null) {
-                forwardMessages(forwardingMessages, false);
+                forwardMessages(forwardingMessages, !QuoteForward);
             }
             chatActivityEnterView.setForceShowSendButton(false, animated);
             chatActivityEnterView.hideTopView(animated);
@@ -3806,59 +3806,46 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                     if (currentEncryptedChat == null) {
                         if (!isBroadcast && !(currentChat != null && (currentChat instanceof TLRPC.TL_chatForbidden || currentChat.left))) {
                             if (type == 2) {
-                                items = new CharSequence[]{LocaleController.getString("Reply", R.string.Reply), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
-                                options = new int[]{8, 2, 1};
+                                items = new CharSequence[]{LocaleController.getString("Reply", R.string.Reply), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
+                                options = new int[]{8, 20, 2, 1};
                             } else if (type == 3) {
-                                items = new CharSequence[]{LocaleController.getString("Reply", R.string.Reply), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Copy", R.string.Copy), LocaleController.getString("Delete", R.string.Delete)};
-                                options = new int[]{8, 2, 3, 1};
+                                items = new CharSequence[]{LocaleController.getString("Reply", R.string.Reply), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Copy", R.string.Copy), LocaleController.getString("Delete", R.string.Delete)};
+                                options = new int[]{8, 20, 2, 3, 1};
                             } else if (type == 4) {
                                 if (selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaDocument) {
-                                    items = new CharSequence[]{LocaleController.getString("Reply", R.string.Reply), LocaleController.getString("ShareFile", R.string.ShareFile), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
+                                    items = new CharSequence[]{LocaleController.getString("Reply", R.string.Reply), LocaleController.getString("ShareFile", R.string.ShareFile), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
                                 } else {
-                                    items = new CharSequence[]{LocaleController.getString("Reply", R.string.Reply), LocaleController.getString("SaveToGallery", R.string.SaveToGallery), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
+                                    items = new CharSequence[]{LocaleController.getString("Reply", R.string.Reply), LocaleController.getString("SaveToGallery", R.string.SaveToGallery), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
                                 }
-                                options = new int[]{8, 4, 2, 1};
+                                options = new int[]{8, 4, 20, 2, 1};
                             } else if (type == 5) {
-                                items = new CharSequence[]{LocaleController.getString("Reply", R.string.Reply), LocaleController.getString("ApplyLocalizationFile", R.string.ApplyLocalizationFile), LocaleController.getString("ShareFile", R.string.ShareFile), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
-                                options = new int[]{8, 5, 4, 2, 1};
+                                items = new CharSequence[]{LocaleController.getString("Reply", R.string.Reply), LocaleController.getString("ApplyLocalizationFile", R.string.ApplyLocalizationFile), LocaleController.getString("ShareFile", R.string.ShareFile), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
+                                options = new int[]{8, 5, 4, 20, 2, 1};
                             } else if (type == 6) {
-                                items = new CharSequence[]{LocaleController.getString("Reply", R.string.Reply), LocaleController.getString("SaveToGallery", R.string.SaveToGallery), LocaleController.getString("ShareFile", R.string.ShareFile), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
-                                options = new int[]{8, 7, 6, 2, 1};
+                                items = new CharSequence[]{LocaleController.getString("Reply", R.string.Reply), LocaleController.getString("SaveToGallery", R.string.SaveToGallery), LocaleController.getString("ShareFile", R.string.ShareFile), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
+                                options = new int[]{8, 7, 6, 20, 2, 1};
                             }
                         } else {
                             if (type == 2) {
-                                items = new CharSequence[]{LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
-                                options = new int[]{2, 1};
+                                items = new CharSequence[]{LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
+                                options = new int[]{20, 2, 1};
                             } else if (type == 3) {
-                                items = new CharSequence[]{LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Copy", R.string.Copy), LocaleController.getString("Delete", R.string.Delete)};
-                                options = new int[]{2, 3, 1};
+                                items = new CharSequence[]{LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Copy", R.string.Copy), LocaleController.getString("Delete", R.string.Delete)};
+                                options = new int[]{20, 2, 3, 1};
                             } else if (type == 4) {
                                 if (selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaDocument) {
-                                    items = new CharSequence[]{LocaleController.getString("ShareFile", R.string.ShareFile), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
+                                    items = new CharSequence[]{LocaleController.getString("ShareFile", R.string.ShareFile), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
                                 } else {
-                                    items = new CharSequence[]{LocaleController.getString("SaveToGallery", R.string.SaveToGallery), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
+                                    items = new CharSequence[]{LocaleController.getString("SaveToGallery", R.string.SaveToGallery), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
                                 }
-                                options = new int[]{4, 2, 1};
+                                options = new int[]{4, 20, 2, 1};
                             } else if (type == 5) {
-                                items = new CharSequence[]{LocaleController.getString("ApplyLocalizationFile", R.string.ApplyLocalizationFile), LocaleController.getString("ShareFile", R.string.ShareFile), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
-                                options = new int[]{5, 4, 2, 1};
+                                items = new CharSequence[]{LocaleController.getString("ApplyLocalizationFile", R.string.ApplyLocalizationFile), LocaleController.getString("ShareFile", R.string.ShareFile), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
+                                options = new int[]{5, 4, 20, 2, 1};
                             } else if (type == 6) {
-                                items = new CharSequence[]{LocaleController.getString("SaveToGallery", R.string.SaveToGallery), LocaleController.getString("ShareFile", R.string.ShareFile), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
-                                options = new int[]{7, 6, 2, 1};
+                                items = new CharSequence[]{LocaleController.getString("SaveToGallery", R.string.SaveToGallery), LocaleController.getString("ShareFile", R.string.ShareFile), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
+                                options = new int[]{7, 6, 20, 2, 1};
                             }
-                            
- //TODO:Check this part       if (type == 2) {
- //                           items = new CharSequence[]{LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
-   //                     } else if (type == 3) {
-     //                       items = new CharSequence[]{LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Copy", R.string.Copy), LocaleController.getString("Delete", R.string.Delete)};
-       //                 } else if (type == 4) {
-         //                   items = new CharSequence[]{LocaleController.getString(selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaDocument ? "SaveToDownloads" : "SaveToGallery",
-           //                     selectedObject.messageOwner.media instanceof TLRPC.TL_messageMediaDocument ? R.string.SaveToDownloads : R.string.SaveToGallery), LocaleController.getString("QuoteForward", R.string.QuoteForward), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Share", R.string.Share), LocaleController.getString("Delete", R.string.Delete)};
-             //           } else if (type == 5) {
-               //             items = new CharSequence[]{LocaleController.getString("ApplyLocalizationFile", R.string.ApplyLocalizationFile), LocaleController.getString("ShareFile", R.string.ShareFile), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
-                 //       } else if (type == 6) {
-                //            items = new CharSequence[]{LocaleController.getString("SaveToGallery", R.string.SaveToGallery), LocaleController.getString("ShareFile", R.string.ShareFile), LocaleController.getString("Forward", R.string.Forward), LocaleController.getString("Delete", R.string.Delete)};
- 
                         }
                     } else {
                         if (type == 2) {
@@ -3891,108 +3878,6 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                             return;
                         }
                         processSelectedOption(finalOptions[i]);
-                        
- // TODO: CHECK THIS ONE TOO   (replaced the whole thing with one line!!               
- /*   
-                        if (type == 0) {
-                            if (i == 0) {
-                                processSelectedOption(0);
-                            } else if (i == 1) {
-                                processSelectedOption(1);
-                            }
-                        } else if (type == 1) {
-                            processSelectedOption(1);
-                        } else if (type == 2) {
-                            if (currentEncryptedChat == null) {
-                                if (i == 0) {
-                                    processSelectedOption(2);
-                                } else if (i == 1) {            // Forward (without forwarded from tag)
-                                    processSelectedOption(20);
-                                } else if (i == 2) {
-                                    processSelectedOption(1);
-                                }
-                            } else {
-                                processSelectedOption(1);
-                            }
-                        } else if (type == 3) {                 // Text message
-                            if (currentEncryptedChat == null) {
-                                if (i == 0) {                   // Quote and Forward
-                                    processSelectedOption(2);
-                                } else if (i == 1) {            // Forward (without forwarded from tag)
-                                    processSelectedOption(20);
-                                } else if (i == 2) {            // Copy
-                                    processSelectedOption(3);
-                                } else if (i == 3) {            // Delete
-                                    processSelectedOption(1);
-                                }
-                            } else {
-                                if (i == 0) {
-                                    processSelectedOption(3);
-                                } else if (i == 1) {
-                                    processSelectedOption(1);
-                                }
-                            }
-                        } else if (type == 4) {
-                            if (currentEncryptedChat == null) {
-                                if (i == 0) {
-                                    processSelectedOption(4);
-                                } else if (i == 1) {
-                                    processSelectedOption(2);
-                                } else if (i == 2) {            // Forward (without forwarded from tag)
-                                    processSelectedOption(20);
-                                } else if (i == 3) {            // Share
-                                    processSelectedOption(60);
-                                } else if (i == 4) {            // Delete
-                                    processSelectedOption(1);
-                                }
-                            } else {
-                                if (i == 0) {
-                                    processSelectedOption(4);
-                                } else if (i == 1) {
-                                    processSelectedOption(1);
-                                }
-                            }
-                        } else if (type == 5) {
-                            if (i == 0) {
-                                processSelectedOption(5);
-                            } else {
-                                if (currentEncryptedChat == null) {
-                                    if (i == 1) {
-                                        processSelectedOption(4);
-                                    } else if (i == 2) {
-                                        processSelectedOption(2);
-                                    } else if (i == 3) {
-                                        processSelectedOption(1);
-                                    }
-                                } else {
-                                    if (i == 1) {
-                                        processSelectedOption(1);
-                                    }
-                                }
-                            }
-                        } else if (type == 6) {
-                            if (i == 0) {
-                                processSelectedOption(7);
-                            } else if (i == 1) {
-                                processSelectedOption(6);
-                            } else if (i == 2) {
-                                processSelectedOption(2);
-                            } else if (i == 3) {
-                                processSelectedOption(1);
-                            }
-                        } else if (type == 7) {
-                            if (i == 0) {
-                                processSelectedOption(0);
-                            } else if (i == 1) {
-                                processSelectedOption(3);
-                            } else if (i == 2) {
-                                processSelectedOption(1);
-                            }
-                        }                    
-                      */
-      
-                        
-                        
                     }
                 });
 
@@ -4055,7 +3940,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             builder.setNegativeButton(LocaleController.getString("Cancel", R.string.Cancel), null);
             showAlertDialog(builder);
         } else if (option == 2 || option == 20) {
-            if (option == 2) {
+            if (option == 20) {
                 QuoteForward = true;
             } else {
                 QuoteForward = false;
@@ -4093,7 +3978,12 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             } else if (selectedObject.type == 1) {
                 MediaController.saveFile(path, getParentActivity(), 0, null);
             } else if (selectedObject.type == 8 || selectedObject.type == 9) {
-                MediaController.saveFile(path, getParentActivity(), 2, selectedObject.getDocumentName());
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType(selectedObject.messageOwner.media.document.mime_type);
+                intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(path)));
+                getParentActivity().startActivityForResult(Intent.createChooser(intent, LocaleController.getString("ShareFile", R.string.ShareFile)), 500);
+                // To allow saving instead of sharing replace this elseif with:
+//              MediaController.saveFile(path, getParentActivity(), 2, selectedObject.getDocumentName());
             }
         } else if (option == 5) {
             File locFile = null;
@@ -4181,7 +4071,7 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
                 shareIntent.setAction(Intent.ACTION_SEND);
                 shareIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(ObjectPath)));
                 shareIntent.setType(MimeType);
-                getParentActivity().startActivity(Intent.createChooser(shareIntent, "Share with"));
+                getParentActivity().startActivity(Intent.createChooser(shareIntent, LocaleController.getString("ShareFile", R.string.ShareFile)));
                 selectedObject = null;
             }
         } else if (option == 8) {
@@ -4249,10 +4139,10 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             progressDialog.show();
         }
     }
-    
-//TODO: the function "forwardSelectedMessages" was replaced with "openProfileWithUsername"
-   // FAD 
-    /*
+
+// the function "forwardSelectedMessages" was replaced with "openProfileWithUsername"
+   // FADTODO
+
      private void forwardSelectedMessages(long did, boolean fromMyName) {
         if (forwaringMessage != null) {
             if (QuoteForward) {
@@ -4279,11 +4169,11 @@ public class ChatActivity extends BaseFragment implements NotificationCenter.Not
             selectedMessagesIds.clear();
             actionBar.hideActionMode();
         }
-    }   
-    
-  
-    
-     */
+    }
+
+
+
+
 
     @Override
     public void didSelectDialog(MessagesActivity activity, long did, boolean param) {
